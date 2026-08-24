@@ -19,29 +19,48 @@ export interface Genre {
   name: string;
 }
 
+// Minimal book shape nested inside reviews / favorites / reading list items
+export interface BookRef {
+  id: number;
+  slug: string;
+  title: string;
+  author: string;
+  genre: string | null;
+  cover_image: string | null;
+}
+
+// Full Book model matching reviews.Book, including aggregate stats
+export interface Book extends BookRef {
+  average_rating: number | null;
+  review_count: number;
+  created_at: string;
+}
+
+// Data payload for creating a new book in the catalog
+export interface CreateBookInput {
+  title: string;
+  author: string;
+  genre_id?: number | null;
+  cover_image?: File | null;
+}
+
 // Review model matching reviews.Review serializer
 export interface Review {
   id: number;
   user: string;           // Username of reviewer
-  genre: string | null;   // Name of genre (read-only StringRelatedField)
-  genre_id?: number;      // Write-only PrimaryKeyRelatedField for create/update
-  book_title: string;
-  author: string;
+  book: BookRef;
   review_text: string;
   rating: number;         // 1 to 5 stars
-  image: string | null;   // Cover image URL
+  like_count: number;
   created_at: string;
   updated_at: string;
 }
 
-// Data payload for creating a new review
+// Data payload for creating a new review against an existing book
 export interface CreateReviewInput {
-  book_title: string;
-  author: string;
+  book_id: number;
   review_text: string;
   rating: number;
-  genre_id?: number | null;
-  image?: File | null;
 }
 
 // Comment model matching reviews.Comment
@@ -53,7 +72,7 @@ export interface Comment {
   created_at: string;
 }
 
-// Like model matching reviews.Like
+// Like model matching reviews.Like (review-level)
 export interface Like {
   id: number;
   review: number;         // Liked Review ID
@@ -61,12 +80,36 @@ export interface Like {
   created_at: string;
 }
 
-// Bookmark model matching reviews.Bookmark
+// Bookmark model matching reviews.Bookmark (review-level "save this take")
 export interface Bookmark {
   id: number;
   review: number;         // Bookmarked Review ID
   user: string;
   created_at: string;
+}
+
+// Favorite model matching reviews.Favorite (book-level "shelf")
+export interface Favorite {
+  id: number;
+  book: Book;
+  user: string;
+  created_at: string;
+}
+
+// ReadingList model matching reviews.ReadingList
+export interface ReadingList {
+  id: number;
+  name: string;
+  item_count: number;
+  created_at: string;
+}
+
+// ReadingListItem model matching reviews.ReadingListItem
+export interface ReadingListItem {
+  id: number;
+  reading_list_id: number;
+  book: Book;
+  added_at: string;
 }
 
 // JWT Authentication response tokens from /api/auth/login/

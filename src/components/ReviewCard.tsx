@@ -1,180 +1,116 @@
-import React from 'react';
-import { Star, Heart, Bookmark, MessageSquare, Trash2, BookOpen } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Heart, MessageCircle, Bookmark, BookOpen } from 'lucide-react';
 import type { Review } from '../types/api';
-import { useAuth } from '../context/AuthContext';
+import { Avatar } from './Avatar';
+import { UserLink } from './UserLink';
+import { formatRelativeTime } from '../utils/formatRelativeTime';
+import { api } from '../services/api';
 
-interface ReviewCardProps {
-  review: Review;
-  isLiked?: boolean;
-  isBookmarked?: boolean;
-  onLikeToggle?: (reviewId: number) => void;
-  onBookmarkToggle?: (reviewId: number) => void;
-  onSelectReview?: (review: Review) => void;
-  onDeleteReview?: (reviewId: number) => void;
-}
+export function ReviewCard({ review }: { review: Review }) {
+  const [likeCount, setLikeCount] = useState(review.like_count);
+  const [liked, setLiked] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-export const ReviewCard: React.FC<ReviewCardProps> = ({
-  review,
-  isLiked = false,
-  isBookmarked = false,
-  onLikeToggle,
-  onBookmarkToggle,
-  onSelectReview,
-  onDeleteReview,
-}) => {
-  const { user } = useAuth();
-  const isOwner = user?.username === review.user;
+  const handleLike = async () => {
+    if (liked) return;
+    setLiked(true);
+    setLikeCount((c) => c + 1);
+    try {
+      await api.addLike(review.id);
+    } catch {
+      setLiked(false);
+      setLikeCount((c) => c - 1);
+    }
+  };
 
-  // Format date cleanly (e.g. "Oct 24, 2024")
-  const formattedDate = new Date(review.created_at).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const handleSave = async () => {
+    if (saved) return;
+    setSaved(true);
+    try {
+      await api.addBookmark(review.id);
+    } catch {
+      setSaved(false);
+    }
+  };
 
   return (
-    <article className="group bg-[#FDFBF7] border border-[#EAE0D0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
-      
-      {/* Top Cover Image / Graphic Placeholder */}
-      <div 
-        onClick={() => onSelectReview && onSelectReview(review)}
-        className="relative h-48 sm:h-56 bg-[#EAE0D0]/50 cursor-pointer overflow-hidden flex items-center justify-center group-hover:opacity-95 transition-opacity"
+    <article className="bg-white rounded-lg shadow-[0px_4px_20px_0px_rgba(0,96,100,0.05)] overflow-hidden w-full">
+      <div className="flex items-center justify-between px-4 sm:px-6 pt-3 pb-[13px] border-b border-[#e5e2e1]">
+        <UserLink username={review.user} className="flex items-center gap-3">
+          <Avatar name={review.user} size={40} />
+          <div>
+            <p className="font-['Inter'] font-semibold text-sm text-[#1c1b1b]">{review.user}</p>
+            <p className="font-['Inter'] text-xs text-[#3f4949]">{formatRelativeTime(review.created_at)}</p>
+          </div>
+        </UserLink>
+      </div>
+
+      <Link
+        to={`/books/${review.book.slug}`}
+        className="bg-[#f6f3f2] flex items-center justify-center px-4 sm:px-6 py-6 sm:py-9"
       >
-        {review.image ? (
+        {review.book.cover_image ? (
           <img
-            src={review.image}
-            alt={review.book_title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            src={review.book.cover_image}
+            alt={review.book.title}
+            className="aspect-[2/3] h-[220px] sm:h-[280px] object-cover rounded-r-sm shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]"
           />
         ) : (
-          <div className="flex flex-col items-center justify-center p-6 text-center">
-            <BookOpen className="w-12 h-12 text-[#854D0E]/40 mb-2" />
-            <span className="font-serif-editorial text-lg text-[#57534E] font-medium italic line-clamp-2">
-              "{review.book_title}"
-            </span>
-            <span className="text-xs text-[#78716C] mt-1 font-sans">by {review.author}</span>
+          <div className="aspect-[2/3] h-[220px] sm:h-[280px] bg-[#e5e2e1] rounded-r-sm shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] flex items-center justify-center">
+            <BookOpen className="w-8 h-8 text-[#3f4949]" />
           </div>
         )}
+      </Link>
 
-        {/* Genre Pill Tag */}
-        {review.genre && (
-          <span className="absolute top-3 left-3 px-3 py-1 bg-[#FDFBF7]/90 backdrop-blur-md border border-[#EAE0D0] rounded-full text-xs font-semibold text-[#854D0E] shadow-sm">
-            {review.genre}
-          </span>
-        )}
+      <div className="flex flex-col gap-1 pt-6 sm:pt-9 pr-4 sm:pr-6 pb-6 pl-3">
+        <Link to={`/books/${review.book.slug}`}>
+          <h2 className="font-['Playfair_Display'] font-bold text-2xl sm:text-[32px] leading-8 sm:leading-[40px] text-[#1c1b1b]">
+            {review.book.title}
+          </h2>
+        </Link>
+        <p className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#6f7979]">
+          by {review.book.author}
+        </p>
 
-        {/* Owner Tag indicator */}
-        {isOwner && (
-          <span className="absolute top-3 right-3 px-2.5 py-0.5 bg-[#854D0E] text-[#FDFBF7] rounded-full text-[10px] font-bold tracking-wider uppercase shadow-sm">
-            Your Review
-          </span>
-        )}
-      </div>
-
-      {/* Card Content Body */}
-      <div className="p-6 flex-1 flex flex-col justify-between">
-        <div onClick={() => onSelectReview && onSelectReview(review)} className="cursor-pointer">
-          
-          {/* Rating Stars */}
-          <div className="flex items-center space-x-1 mb-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                className={`w-4 h-4 ${
-                  star <= review.rating
-                    ? 'text-[#D97706] fill-[#D97706]'
-                    : 'text-[#EAE0D0] fill-none'
-                }`}
-              />
-            ))}
-            <span className="text-xs font-semibold text-[#78716C] ml-1.5">
-              {review.rating}/5
+        {review.book.genre && (
+          <div className="flex gap-2 pt-2">
+            <span className="bg-[rgba(255,222,172,0.5)] text-[#604100] text-xs font-medium px-3 py-1 rounded-md">
+              {review.book.genre}
             </span>
           </div>
+        )}
 
-          {/* Book Title & Author */}
-          <h3 className="font-serif-editorial text-xl font-bold text-[#1C1917] group-hover:text-[#854D0E] transition-colors leading-tight line-clamp-1">
-            {review.book_title}
-          </h3>
-          <p className="text-sm font-medium text-[#78716C] mb-3">
-            by <span className="text-[#57534E]">{review.author}</span>
-          </p>
+        <p className="font-['Inter'] text-base text-[#1c1b1b] leading-[26px] py-5 whitespace-pre-line">
+          {review.review_text}
+        </p>
 
-          {/* Review Text Preview */}
-          <p className="text-sm text-[#57534E] leading-relaxed line-clamp-3 mb-4">
-            {review.review_text}
-          </p>
-        </div>
-
-        {/* Card Footer: Reviewer Info & Actions */}
-        <div className="pt-4 border-t border-[#EAE0D0]/60 flex items-center justify-between">
-          
-          {/* Reviewer Meta */}
-          <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-full bg-[#EAE0D0] text-[#854D0E] flex items-center justify-center font-bold text-xs">
-              {review.user.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-[#1C1917] leading-none">{review.user}</p>
-              <p className="text-[10px] text-[#A8A29E] leading-none mt-0.5">{formattedDate}</p>
-            </div>
+        <div className="flex items-center justify-between border-t border-[#e5e2e1] pt-[17px]">
+          <div className="flex gap-6 items-center">
+            <button
+              type="button"
+              onClick={handleLike}
+              className="flex items-center gap-2 text-[#3f4949]"
+              aria-pressed={liked}
+            >
+              <Heart className={`w-5 h-5 ${liked ? 'fill-[#00464a] text-[#00464a]' : ''}`} />
+              <span className="font-['Inter'] font-medium text-xs">{likeCount}</span>
+            </button>
+            <Link to={`/reviews/${review.id}`} className="flex items-center gap-2 text-[#3f4949]">
+              <MessageCircle className="w-5 h-5" />
+            </Link>
           </div>
-
-          {/* Action Icons */}
-          <div className="flex items-center space-x-1">
-            
-            {/* Like Button */}
-            <button
-              onClick={() => onLikeToggle && onLikeToggle(review.id)}
-              className={`p-2 rounded-full transition-all ${
-                isLiked
-                  ? 'bg-[#991B1B]/10 text-[#991B1B]'
-                  : 'text-[#78716C] hover:bg-[#F5EFE6] hover:text-[#991B1B]'
-              }`}
-              title={isLiked ? 'Unlike' : 'Like'}
-            >
-              <Heart className={`w-4 h-4 ${isLiked ? 'fill-[#991B1B]' : ''}`} />
-            </button>
-
-            {/* Bookmark Button */}
-            <button
-              onClick={() => onBookmarkToggle && onBookmarkToggle(review.id)}
-              className={`p-2 rounded-full transition-all ${
-                isBookmarked
-                  ? 'bg-[#854D0E]/10 text-[#854D0E]'
-                  : 'text-[#78716C] hover:bg-[#F5EFE6] hover:text-[#854D0E]'
-              }`}
-              title={isBookmarked ? 'Remove Bookmark' : 'Bookmark'}
-            >
-              <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-[#854D0E]' : ''}`} />
-            </button>
-
-            {/* Read Comments */}
-            <button
-              onClick={() => onSelectReview && onSelectReview(review)}
-              className="p-2 text-[#78716C] hover:bg-[#F5EFE6] hover:text-[#1C1917] rounded-full transition-all"
-              title="View Discussion"
-            >
-              <MessageSquare className="w-4 h-4" />
-            </button>
-
-            {/* Delete Review (Owner only) */}
-            {isOwner && onDeleteReview && (
-              <button
-                onClick={() => onDeleteReview(review.id)}
-                className="p-2 text-[#78716C] hover:bg-[#991B1B]/10 hover:text-[#991B1B] rounded-full transition-all"
-                title="Delete Review"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
-
-          </div>
-
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saved}
+            className="flex items-center gap-2 px-3 py-2 rounded font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#00464a] disabled:text-[#6f7979]"
+          >
+            <Bookmark className={`w-4 h-[18px] ${saved ? 'fill-current' : ''}`} />
+            {saved ? 'Saved' : 'Save'}
+          </button>
         </div>
-
       </div>
-
     </article>
   );
-};
+}

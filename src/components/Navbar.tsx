@@ -1,184 +1,103 @@
-import React, { useState } from 'react';
-import { BookOpen, Search, LogOut, PlusCircle, Bookmark, PenTool } from 'lucide-react';
+import { useState } from 'react';
+import { BookOpen, Home, Compass, PenLine, Bookmark, User, Menu, X } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { NotificationBell } from './NotificationBell';
 
-interface NavbarProps {
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
-  onOpenAuthModal: (mode: 'login' | 'register') => void;
-  onOpenCreateReviewModal: () => void;
-  activeTab: 'feed' | 'bookmarks' | 'my-reviews';
-  onTabChange: (tab: 'feed' | 'bookmarks' | 'my-reviews') => void;
-}
+const NAV_LINKS = [
+  { to: '/', label: 'Feed', icon: Home, end: true },
+  { to: '/explore', label: 'Explore', icon: Compass },
+  { to: '/write', label: 'Write', icon: PenLine },
+  { to: '/saved', label: 'Saved', icon: Bookmark },
+  { to: '/profile', label: 'Profile', icon: User },
+];
 
-export const Navbar: React.FC<NavbarProps> = ({
-  searchTerm,
-  onSearchChange,
-  onOpenAuthModal,
-  onOpenCreateReviewModal,
-  activeTab,
-  onTabChange,
-}) => {
-  const { user, isAuthenticated, logout } = useAuth();
-  const [showUserMenu, setShowUserMenu] = useState(false);
+export function Navbar() {
+  const { user } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-[#EAE0D0] transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          
-          {/* Brand Logo */}
-          <div 
-            onClick={() => onTabChange('feed')}
-            className="flex items-center space-x-3 cursor-pointer group"
-          >
-            <div className="w-10 h-10 rounded-lg bg-[#854D0E] text-[#FDFBF7] flex items-center justify-center shadow-sm group-hover:bg-[#B45309] transition-colors">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-serif-editorial text-2xl font-bold tracking-tight text-[#1C1917]">
-                Spine<span className="text-[#854D0E]">IT</span>
-              </span>
-              <span className="block text-[10px] tracking-widest text-[#78716C] uppercase font-sans font-medium">
-                Literary Reviews
-              </span>
-            </div>
-          </div>
+    <header
+      className="bg-[#fcf9f8] flex flex-col items-start w-full drop-shadow-[0px_4px_10px_rgba(0,96,100,0.05)]"
+      data-node-id="2:3"
+    >
+      <div className="flex h-16 lg:h-20 items-center justify-between max-w-[1280px] px-4 sm:px-6 lg:px-16 w-full mx-auto">
+        <NavLink to="/" className="flex items-center gap-2.5 lg:gap-[16.6px] shrink-0" onClick={() => setIsMenuOpen(false)}>
+          <BookOpen className="w-[22px] h-[22px] text-[#00464a]" />
+          <span className="font-['Playfair_Display'] text-base text-[#00464a]">SpineIt</span>
+        </NavLink>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-6 hidden md:block">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#78716C]">
-                <Search className="w-4 h-4" />
-              </div>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search title, author, or genre..."
-                className="w-full pl-10 pr-4 py-2.5 bg-[#F5EFE6] border border-[#EAE0D0] rounded-full text-sm text-[#1C1917] placeholder-[#A8A29E] focus:outline-none focus:ring-2 focus:ring-[#854D0E]/30 focus:border-[#854D0E] transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Navigation Links & Action Buttons */}
-          <div className="flex items-center space-x-4">
-            
-            {/* Tab Navigation */}
-            <nav className="hidden sm:flex items-center space-x-1">
-              <button
-                onClick={() => onTabChange('feed')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  activeTab === 'feed'
-                    ? 'bg-[#EAE0D0] text-[#1C1917]'
-                    : 'text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5EFE6]'
-                }`}
-              >
-                Feed
-              </button>
-
-              {isAuthenticated && (
-                <>
-                  <button
-                    onClick={() => onTabChange('bookmarks')}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center space-x-1.5 ${
-                      activeTab === 'bookmarks'
-                        ? 'bg-[#EAE0D0] text-[#1C1917]'
-                        : 'text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5EFE6]'
-                    }`}
-                  >
-                    <Bookmark className="w-4 h-4 text-[#854D0E]" />
-                    <span>Bookmarks</span>
-                  </button>
-
-                  <button
-                    onClick={() => onTabChange('my-reviews')}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center space-x-1.5 ${
-                      activeTab === 'my-reviews'
-                        ? 'bg-[#EAE0D0] text-[#1C1917]'
-                        : 'text-[#57534E] hover:text-[#1C1917] hover:bg-[#F5EFE6]'
-                    }`}
-                  >
-                    <PenTool className="w-4 h-4 text-[#854D0E]" />
-                    <span>My Reviews</span>
-                  </button>
-                </>
-              )}
+        {user ? (
+          <div className="flex items-center gap-2 lg:gap-6 shrink-0">
+            <nav className="hidden lg:flex gap-8 items-start shrink-0">
+              {NAV_LINKS.map(({ to, label, icon: Icon, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  className={({ isActive }) =>
+                    `flex flex-col gap-1 items-center shrink-0 font-['Inter'] text-sm tracking-[0.7px] ${
+                      isActive ? 'font-bold text-[#00464a]' : 'font-semibold text-[#3f4949]'
+                    }`
+                  }
+                >
+                  <Icon className="w-5 h-5" strokeWidth={2} />
+                  <span>{label}</span>
+                </NavLink>
+              ))}
             </nav>
-
-            {/* Write Review & User Menu */}
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={onOpenCreateReviewModal}
-                  className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-[#854D0E] hover:bg-[#B45309] text-[#FDFBF7] text-sm font-medium shadow-sm transition-all transform active:scale-95"
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  <span>Write Review</span>
-                </button>
-
-                {/* User Dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center space-x-2 p-1.5 rounded-full hover:bg-[#F5EFE6] border border-transparent hover:border-[#EAE0D0] transition-all"
-                  >
-                    {user?.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.username}
-                        className="w-8 h-8 rounded-full object-cover border border-[#854D0E]/20"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-[#EAE0D0] text-[#854D0E] flex items-center justify-center font-bold text-sm">
-                        {user?.username.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </button>
-
-                  {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-56 bg-[#FDFBF7] border border-[#EAE0D0] rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                      <div className="px-4 py-3 border-b border-[#EAE0D0]">
-                        <p className="text-xs text-[#78716C] uppercase font-semibold">Signed in as</p>
-                        <p className="text-sm font-bold text-[#1C1917] truncate">{user?.username}</p>
-                        <p className="text-xs text-[#78716C] truncate">{user?.email}</p>
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          setShowUserMenu(false);
-                          logout();
-                        }}
-                        className="w-full text-left px-4 py-2.5 text-sm text-[#991B1B] hover:bg-[#F5EFE6] flex items-center space-x-2 font-medium transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => onOpenAuthModal('login')}
-                  className="px-4 py-2 text-sm font-medium text-[#57534E] hover:text-[#1C1917] transition-colors"
-                >
-                  Sign In
-                </button>
-                <button
-                  onClick={() => onOpenAuthModal('register')}
-                  className="px-4 py-2 rounded-full bg-[#854D0E] hover:bg-[#B45309] text-[#FDFBF7] text-sm font-medium shadow-sm transition-all"
-                >
-                  Get Started
-                </button>
-              </div>
-            )}
-
+            <NotificationBell />
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((v) => !v)}
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              className="lg:hidden text-[#00464a] p-2"
+            >
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
-
-        </div>
+        ) : (
+          <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+            <NavLink
+              to="/explore"
+              className={({ isActive }) =>
+                `font-['Inter'] font-semibold text-sm tracking-[0.7px] pb-1.5 ${
+                  isActive ? 'text-[#00464a] border-b-2 border-[#00464a]' : 'text-[#3f4949]'
+                }`
+              }
+            >
+              Explore
+            </NavLink>
+            <NavLink
+              to="/signup"
+              className="bg-[#00464a] text-white font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-4 sm:px-6 py-2.5 sm:py-3"
+            >
+              Join Now
+            </NavLink>
+          </div>
+        )}
       </div>
+
+      {user && isMenuOpen && (
+        <nav className="lg:hidden flex flex-col items-stretch w-full border-t border-[#e5e2e1] px-4 sm:px-6 py-2">
+          {NAV_LINKS.map(({ to, label, icon: Icon, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              onClick={() => setIsMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 py-3 font-['Inter'] text-sm tracking-[0.7px] ${
+                  isActive ? 'font-bold text-[#00464a]' : 'font-semibold text-[#3f4949]'
+                }`
+              }
+            >
+              <Icon className="w-5 h-5" strokeWidth={2} />
+              <span>{label}</span>
+            </NavLink>
+          ))}
+        </nav>
+      )}
     </header>
   );
-};
+}

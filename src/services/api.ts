@@ -3,12 +3,19 @@ import type {
   AuthTokens,
   User,
   Genre,
+  Book,
+  CreateBookInput,
   Review,
+  CreateReviewInput,
   Comment,
   Like,
   Bookmark,
+  Favorite,
+  ReadingList,
+  ReadingListItem,
   PaginatedResponse,
 } from '../types/api';
+import { mockApi } from './mockApi';
 
 // Set base URL to production SpineIT API or local fallback via VITE_API_BASE_URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://spineit-api.onrender.com/api';
@@ -36,7 +43,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // If request returns 401 and hasn't been retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -54,7 +61,7 @@ apiClient.interceptors.response.use(
           // Retry original request with new token
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return apiClient(originalRequest);
-        } catch (refreshError) {
+        } catch {
           // Refresh token expired or blacklisted -> Clear tokens & log out
           localStorage.removeItem('spineit_access_token');
           localStorage.removeItem('spineit_refresh_token');
@@ -67,11 +74,18 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Normalizes DRF's paginated-or-plain-array response shapes into a plain array.
+function toArray<T>(data: PaginatedResponse<T> | T[]): T[] {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.results)) return data.results;
+  return [];
+}
+
 // ==========================================
 // API Endpoint Functions
 // ==========================================
 
-export const api = {
+const realApi = {
   // --- AUTH ENDPOINTS ---
   login: async (credentials: { username: string; password: string }) => {
     const res = await apiClient.post<AuthTokens>('/auth/login/', credentials);
@@ -104,11 +118,61 @@ export const api = {
     return res.data;
   },
 
+  requestPasswordReset: async (email: string) => {
+    const res = await apiClient.post('/auth/password-reset/', { email });
+    return res.data;
+  },
+
+  confirmPasswordReset: async (payload: { uid: string; token: string; new_password: string }) => {
+    const res = await apiClient.post('/auth/password-reset-confirm/', payload);
+    return res.data;
+  },
+
+  verifyEmail: async (payload: { uid: string; token: string }) => {
+    const res = await apiClient.post('/auth/verify-email/', payload);
+    return res.data;
+  },
+
+  // --- BOOKS ENDPOINTS ---
+  getBooks: async (params?: { search?: string; page?: number }) => {
+    const res = await apiClient.get<PaginatedResponse<Book> | Book[]>('/books/', { params });
+    return toArray(res.data);
+  },
+
+  getBook: async (slug: string) => {
+    const res = await apiClient.get<Book>(`/books/${slug}/`);
+    return res.data;
+  },
+
+  createBook: async (input: CreateBookInput) => {
+    const formData = new FormData();
+    formData.append('title', input.title);
+    formData.append('author', input.author);
+    if (input.genre_id != null) formData.append('genre_id', String(input.genre_id));
+    if (input.cover_image) formData.append('cover_image', input.cover_image);
+    const res = await apiClient.post<Book>('/books/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
+
   // --- REVIEWS ENDPOINTS ---
-  getReviews: async (params?: { search?: string; page?: number }) => {
+  getReviews: async (params?: { search?: string; page?: number; book?: number }) => {
     const res = await apiClient.get<PaginatedResponse<Review>>('/reviews/', { params });
-    const results = Array.isArray(res.data.results) ? res.data.results : (Array.isArray(res.data) ? res.data : []);
-    return { ...res.data, results };
+    return { ...res.data, results: toArray(res.data) };
+  },
+
+  getMyReviews: async () => {
+    const all: Review[] = [];
+    let url: string | null = '/reviews/';
+    let params: Record<string, unknown> | undefined = { mine: true };
+    while (url) {
+      const res: { data: PaginatedResponse<Review> | Review[] } = await apiClient.get(url, { params });
+      all.push(...toArray(res.data));
+      url = Array.isArray(res.data) ? null : res.data.next;
+      params = undefined; // `next` is already a full URL with query params baked in
+    }
+    return all;
   },
 
   getReview: async (id: number) => {
@@ -116,17 +180,13 @@ export const api = {
     return res.data;
   },
 
-  createReview: async (formData: FormData) => {
-    const res = await apiClient.post<Review>('/reviews/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+  createReview: async (input: CreateReviewInput) => {
+    const res = await apiClient.post<Review>('/reviews/', input);
     return res.data;
   },
 
-  updateReview: async (id: number, formData: FormData) => {
-    const res = await apiClient.patch<Review>(`/reviews/${id}/`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+  updateReview: async (id: number, input: Partial<CreateReviewInput>) => {
+    const res = await apiClient.patch<Review>(`/reviews/${id}/`, input);
     return res.data;
   },
 
@@ -137,23 +197,15 @@ export const api = {
   // --- GENRES ENDPOINTS ---
   getGenres: async () => {
     const res = await apiClient.get<PaginatedResponse<Genre> | Genre[]>('/genres/');
-    if (Array.isArray(res.data)) return res.data;
-    if (res.data && Array.isArray((res.data as PaginatedResponse<Genre>).results)) {
-      return (res.data as PaginatedResponse<Genre>).results;
-    }
-    return [];
+    return toArray(res.data);
   },
 
   // --- COMMENTS ENDPOINTS ---
-  getComments: async (reviewId?: number) => {
-    const res = await apiClient.get<PaginatedResponse<Comment> | Comment[]>('/comments/');
-    const comments = Array.isArray(res.data) 
-      ? res.data 
-      : (res.data && Array.isArray((res.data as PaginatedResponse<Comment>).results) ? (res.data as PaginatedResponse<Comment>).results : []);
-    if (reviewId) {
-      return comments.filter((c) => c.review === reviewId);
-    }
-    return comments;
+  getComments: async (reviewId: number) => {
+    const res = await apiClient.get<PaginatedResponse<Comment> | Comment[]>('/comments/', {
+      params: { review: reviewId },
+    });
+    return toArray(res.data);
   },
 
   createComment: async (reviewId: number, text: string) => {
@@ -168,11 +220,7 @@ export const api = {
   // --- LIKES ENDPOINTS ---
   getLikes: async () => {
     const res = await apiClient.get<PaginatedResponse<Like> | Like[]>('/likes/');
-    if (Array.isArray(res.data)) return res.data;
-    if (res.data && Array.isArray((res.data as PaginatedResponse<Like>).results)) {
-      return (res.data as PaginatedResponse<Like>).results;
-    }
-    return [];
+    return toArray(res.data);
   },
 
   addLike: async (reviewId: number) => {
@@ -184,14 +232,10 @@ export const api = {
     await apiClient.delete(`/likes/${likeId}/`);
   },
 
-  // --- BOOKMARKS ENDPOINTS ---
+  // --- BOOKMARKS ENDPOINTS (save a specific review) ---
   getBookmarks: async () => {
     const res = await apiClient.get<PaginatedResponse<Bookmark> | Bookmark[]>('/bookmarks/');
-    if (Array.isArray(res.data)) return res.data;
-    if (res.data && Array.isArray((res.data as PaginatedResponse<Bookmark>).results)) {
-      return (res.data as PaginatedResponse<Bookmark>).results;
-    }
-    return [];
+    return toArray(res.data);
   },
 
   addBookmark: async (reviewId: number) => {
@@ -202,4 +246,60 @@ export const api = {
   removeBookmark: async (bookmarkId: number) => {
     await apiClient.delete(`/bookmarks/${bookmarkId}/`);
   },
+
+  // --- FAVORITES ENDPOINTS (book-level shelf) ---
+  getFavorites: async () => {
+    const res = await apiClient.get<PaginatedResponse<Favorite> | Favorite[]>('/favorites/');
+    return toArray(res.data);
+  },
+
+  addFavorite: async (bookId: number) => {
+    const res = await apiClient.post<Favorite>('/favorites/', { book_id: bookId });
+    return res.data;
+  },
+
+  removeFavorite: async (favoriteId: number) => {
+    await apiClient.delete(`/favorites/${favoriteId}/`);
+  },
+
+  // --- READING LISTS ENDPOINTS ---
+  getReadingLists: async () => {
+    const res = await apiClient.get<PaginatedResponse<ReadingList> | ReadingList[]>('/reading-lists/');
+    return toArray(res.data);
+  },
+
+  createReadingList: async (name: string) => {
+    const res = await apiClient.post<ReadingList>('/reading-lists/', { name });
+    return res.data;
+  },
+
+  deleteReadingList: async (id: number) => {
+    await apiClient.delete(`/reading-lists/${id}/`);
+  },
+
+  getReadingListItems: async (readingListId: number) => {
+    const res = await apiClient.get<PaginatedResponse<ReadingListItem> | ReadingListItem[]>(
+      '/reading-list-items/',
+      { params: { reading_list: readingListId } }
+    );
+    return toArray(res.data);
+  },
+
+  addBookToList: async (readingListId: number, bookId: number) => {
+    const res = await apiClient.post<ReadingListItem>('/reading-list-items/', {
+      reading_list_id: readingListId,
+      book_id: bookId,
+    });
+    return res.data;
+  },
+
+  removeBookFromList: async (itemId: number) => {
+    await apiClient.delete(`/reading-list-items/${itemId}/`);
+  },
 };
+
+// While the real backend is being rebuilt, the app runs entirely against in-memory
+// mock data (see mockApi.ts). Set VITE_USE_MOCKS=false in .env.local to switch back.
+export const USE_MOCKS = import.meta.env.VITE_USE_MOCKS !== 'false';
+
+export const api: typeof realApi = USE_MOCKS ? mockApi : realApi;

@@ -1,0 +1,161 @@
+import { useEffect, useState } from 'react';
+import { Search, Hash, Sparkles, MessagesSquare } from 'lucide-react';
+import { api } from '../services/api';
+import type { Book, Review, Genre } from '../types/api';
+import { useAuth } from '../context/AuthContext';
+import { TrendingTopics } from '../components/TrendingTopics';
+import { BookMiniCard } from '../components/BookMiniCard';
+import { ReviewSnippetCard } from '../components/ReviewSnippetCard';
+
+const RATING_OPTIONS = [0, 3, 4, 4.5];
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'rating', label: 'Highest Rated' },
+  { value: 'title', label: 'Title A–Z' },
+] as const;
+
+export function ExplorePage() {
+  const { user } = useAuth();
+  const [query, setQuery] = useState('');
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [selectedGenre, setSelectedGenre] = useState('');
+  const [minRating, setMinRating] = useState(0);
+  const [sortBy, setSortBy] = useState<(typeof SORT_OPTIONS)[number]['value']>('newest');
+  const [allBooks, setAllBooks] = useState<Book[] | null>(null);
+  const [reviews, setReviews] = useState<Review[] | null>(null);
+
+  const isFiltered = Boolean(query || selectedGenre || minRating > 0);
+
+  useEffect(() => {
+    api.getGenres().then(setGenres).catch(() => setGenres([]));
+    api
+      .getReviews()
+      .then((res) => setReviews(res.results.slice(0, 2)))
+      .catch(() => setReviews([]));
+  }, []);
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      api
+        .getBooks(query ? { search: query } : undefined)
+        .then(setAllBooks)
+        .catch(() => setAllBooks([]));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [query]);
+
+  const books = allBooks
+    ?.filter((b) => !selectedGenre || b.genre === selectedGenre)
+    .filter((b) => (b.average_rating ?? 0) >= minRating)
+    .sort((a, b) => {
+      if (sortBy === 'rating') return (b.average_rating ?? 0) - (a.average_rating ?? 0);
+      if (sortBy === 'title') return a.title.localeCompare(b.title);
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    })
+    .slice(0, 12);
+
+  return (
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-16 py-8 lg:py-12 flex flex-col items-center gap-12 lg:gap-20">
+      {!user && (
+        <div className="flex flex-col items-center gap-6 text-center max-w-[672px] pt-4 lg:pt-8">
+          <h1 className="font-['Playfair_Display'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-[#00464a] tracking-[-0.96px]">
+            Discover Your Next Obsession
+          </h1>
+          <p className="font-['Inter'] text-lg text-[#3f4949]">
+            Search millions of books, authors, and community reviews in our digital sanctuary.
+          </p>
+        </div>
+      )}
+
+      <div className="w-full max-w-[672px] flex flex-col gap-3">
+        <div className="relative w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#6b7280]" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search books, authors, or topics..."
+            className="w-full bg-[#f6f3f2] border border-[#bec8c9] border-b-2 rounded-t pl-[49px] pr-4 pt-[15px] pb-4 font-['Inter'] text-base text-[#1c1b1b] placeholder:text-[#6b7280] outline-none"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <select
+            value={selectedGenre}
+            onChange={(e) => setSelectedGenre(e.target.value)}
+            className="bg-white border border-[#bec8c9] rounded-xl px-3 py-2 font-['Inter'] text-sm text-[#1c1b1b] outline-none"
+          >
+            <option value="">All Genres</option>
+            {genres.map((g) => (
+              <option key={g.id} value={g.name}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={minRating}
+            onChange={(e) => setMinRating(Number(e.target.value))}
+            className="bg-white border border-[#bec8c9] rounded-xl px-3 py-2 font-['Inter'] text-sm text-[#1c1b1b] outline-none"
+          >
+            {RATING_OPTIONS.map((r) => (
+              <option key={r} value={r}>
+                {r === 0 ? 'Any Rating' : `${r}+ Stars`}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className="bg-white border border-[#bec8c9] rounded-xl px-3 py-2 font-['Inter'] text-sm text-[#1c1b1b] outline-none"
+          >
+            {SORT_OPTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                Sort: {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <section className="w-full flex flex-col gap-6">
+        <div className="flex items-center gap-2">
+          <Hash className="w-[21px] h-[21px] text-[#00464a]" />
+          <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">Trending Topics</h2>
+        </div>
+        <TrendingTopics />
+      </section>
+
+      <section className="w-full flex flex-col gap-6">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-[21px] h-[21px] text-[#00464a]" />
+          <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">
+            {isFiltered ? 'Search Results' : 'Your Next Read'}
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+          {books === undefined && <p className="font-['Inter'] text-[#3f4949]">Loading…</p>}
+          {books?.length === 0 && <p className="font-['Inter'] text-[#3f4949]">No books match those filters.</p>}
+          {books?.map((book) => (
+            <BookMiniCard key={book.id} book={book} />
+          ))}
+        </div>
+      </section>
+
+      <section className="w-full flex flex-col gap-6">
+        <div className="flex items-center gap-2">
+          <MessagesSquare className="w-[21px] h-[21px] text-[#00464a]" />
+          <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">Trending Reviews</h2>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-6 w-full">
+          {reviews === null && <p className="font-['Inter'] text-[#3f4949]">Loading…</p>}
+          {reviews?.length === 0 && <p className="font-['Inter'] text-[#3f4949]">No reviews yet.</p>}
+          {reviews?.map((review) => (
+            <ReviewSnippetCard key={review.id} review={review} />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

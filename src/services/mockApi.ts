@@ -1,0 +1,374 @@
+import type {
+  AuthTokens,
+  User,
+  Book,
+  CreateBookInput,
+  Review,
+  CreateReviewInput,
+  Comment,
+  Like,
+  Bookmark,
+  Favorite,
+  ReadingList,
+  ReadingListItem,
+  PaginatedResponse,
+} from '../types/api';
+import {
+  mockGenres,
+  mockUsers,
+  mockBooks,
+  mockReviews,
+  mockComments,
+  mockLikes,
+  mockBookmarks,
+  mockFavorites,
+  mockReadingLists,
+  mockReadingListItems,
+  mockNextIds,
+  persistMockData,
+} from './mockData';
+import { socialApi } from './socialApi';
+
+function delay<T>(value: T, ms = 250): Promise<T> {
+  return new Promise((resolve) => setTimeout(() => resolve(value), ms));
+}
+
+function fail(message: string): never {
+  throw new Error(message);
+}
+
+function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function currentUserId(): number | null {
+  const token = localStorage.getItem('spineit_access_token');
+  if (!token?.startsWith('mock-')) return null;
+  const id = Number(token.replace('mock-', ''));
+  return Number.isFinite(id) ? id : null;
+}
+
+function requireCurrentUser(): User {
+  const id = currentUserId();
+  const user = mockUsers.find((u) => u.id === id);
+  if (!user) fail('Not authenticated');
+  return user;
+}
+
+function recalcBookStats(bookId: number) {
+  const book = mockBooks.find((b) => b.id === bookId);
+  if (!book) return;
+  const reviewsForBook = mockReviews.filter((r) => r.book.id === bookId);
+  book.review_count = reviewsForBook.length;
+  book.average_rating = reviewsForBook.length
+    ? Math.round((reviewsForBook.reduce((sum, r) => sum + r.rating, 0) / reviewsForBook.length) * 10) / 10
+    : null;
+}
+
+const mockApiRaw = {
+  // --- AUTH ---
+  login: async ({ username }: { username: string; password: string }): Promise<AuthTokens> => {
+    const match = mockUsers.find(
+      (u) => u.username.toLowerCase() === username.toLowerCase() || u.email.toLowerCase() === username.toLowerCase()
+    );
+    if (!match) fail('No account found with that email. Try signing up first.');
+    return delay({ access: `mock-${match.id}`, refresh: `mock-refresh-${match.id}` });
+  },
+
+  register: async ({ username, email }: { username: string; email: string; password: string }): Promise<User> => {
+    if (mockUsers.some((u) => u.username.toLowerCase() === username.toLowerCase())) {
+      fail('That username is already taken.');
+    }
+    const user: User = { id: mockNextIds.user++, username, email, bio: null, is_verified: false, avatar: null };
+    mockUsers.push(user);
+    return delay(user);
+  },
+
+  logout: async (): Promise<void> => {
+    localStorage.removeItem('spineit_access_token');
+    localStorage.removeItem('spineit_refresh_token');
+    localStorage.removeItem('spineit_user');
+    return delay(undefined);
+  },
+
+  getProfile: async (): Promise<User> => delay(requireCurrentUser()),
+
+  updateProfile: async (data: FormData | Partial<User>): Promise<User> => {
+    const user = requireCurrentUser();
+    if (data instanceof FormData) {
+      const bio = data.get('bio');
+      if (typeof bio === 'string') user.bio = bio;
+    } else {
+      Object.assign(user, data);
+    }
+    return delay(user);
+  },
+
+  requestPasswordReset: async (_email: string) => delay({ detail: 'Password reset email sent (mock).' }),
+  confirmPasswordReset: async (_payload: { uid: string; token: string; new_password: string }) =>
+    delay({ detail: 'Password reset (mock).' }),
+  verifyEmail: async (_payload: { uid: string; token: string }) => delay({ detail: 'Email verified (mock).' }),
+
+  // --- BOOKS ---
+  getBooks: async (params?: { search?: string; page?: number }): Promise<Book[]> => {
+    let results = mockBooks;
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      results = results.filter(
+        (b) => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)
+      );
+    }
+    return delay([...results]);
+  },
+
+  getBook: async (slug: string): Promise<Book> => {
+    const book = mockBooks.find((b) => b.slug === slug);
+    if (!book) fail('Book not found');
+    return delay(book);
+  },
+
+  createBook: async (input: CreateBookInput): Promise<Book> => {
+    const book: Book = {
+      id: mockNextIds.book++,
+      slug: `${slugify(input.title)}-${mockNextIds.book}`,
+      title: input.title,
+      author: input.author,
+      genre: mockGenres.find((g) => g.id === input.genre_id)?.name ?? null,
+      cover_image: input.cover_image ? URL.createObjectURL(input.cover_image) : null,
+      average_rating: null,
+      review_count: 0,
+      created_at: new Date().toISOString(),
+    };
+    mockBooks.push(book);
+    return delay(book);
+  },
+
+  // --- REVIEWS ---
+  getReviews: async (params?: {
+    search?: string;
+    page?: number;
+    book?: number;
+  }): Promise<PaginatedResponse<Review>> => {
+    let results = [...mockReviews].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    if (params?.book) results = results.filter((r) => r.book.id === params.book);
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      results = results.filter(
+        (r) => r.book.title.toLowerCase().includes(q) || r.review_text.toLowerCase().includes(q)
+      );
+    }
+    return delay({ count: results.length, next: null, previous: null, results });
+  },
+
+  getMyReviews: async (): Promise<Review[]> => {
+    const user = requireCurrentUser();
+    return delay(mockReviews.filter((r) => r.user === user.username));
+  },
+
+  getReview: async (id: number): Promise<Review> => {
+    const review = mockReviews.find((r) => r.id === id);
+    if (!review) fail('Review not found');
+    return delay(review);
+  },
+
+  createReview: async (input: CreateReviewInput): Promise<Review> => {
+    const user = requireCurrentUser();
+    const book = mockBooks.find((b) => b.id === input.book_id);
+    if (!book) fail('Book not found');
+    const review: Review = {
+      id: mockNextIds.review++,
+      user: user.username,
+      book,
+      review_text: input.review_text,
+      rating: input.rating,
+      like_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    mockReviews.push(review);
+    recalcBookStats(book.id);
+    return delay(review);
+  },
+
+  updateReview: async (id: number, input: Partial<CreateReviewInput>): Promise<Review> => {
+    const review = mockReviews.find((r) => r.id === id);
+    if (!review) fail('Review not found');
+    if (input.review_text !== undefined) review.review_text = input.review_text;
+    if (input.rating !== undefined) review.rating = input.rating;
+    review.updated_at = new Date().toISOString();
+    recalcBookStats(review.book.id);
+    return delay(review);
+  },
+
+  deleteReview: async (id: number): Promise<void> => {
+    const index = mockReviews.findIndex((r) => r.id === id);
+    if (index === -1) fail('Review not found');
+    const [removed] = mockReviews.splice(index, 1);
+    recalcBookStats(removed.book.id);
+    return delay(undefined);
+  },
+
+  // --- GENRES ---
+  getGenres: async () => delay([...mockGenres]),
+
+  // --- COMMENTS ---
+  getComments: async (reviewId: number): Promise<Comment[]> =>
+    delay(mockComments.filter((c) => c.review === reviewId)),
+
+  createComment: async (reviewId: number, text: string): Promise<Comment> => {
+    const user = requireCurrentUser();
+    const comment: Comment = {
+      id: mockNextIds.comment++,
+      review: reviewId,
+      user: user.username,
+      text,
+      created_at: new Date().toISOString(),
+    };
+    mockComments.push(comment);
+    const review = mockReviews.find((r) => r.id === reviewId);
+    if (review) socialApi.notifyComment(review.user, user.username, reviewId);
+    return delay(comment);
+  },
+
+  deleteComment: async (id: number): Promise<void> => {
+    const index = mockComments.findIndex((c) => c.id === id);
+    if (index !== -1) mockComments.splice(index, 1);
+    return delay(undefined);
+  },
+
+  // --- LIKES ---
+  getLikes: async (): Promise<Like[]> => delay([...mockLikes]),
+
+  addLike: async (reviewId: number): Promise<Like> => {
+    const user = requireCurrentUser();
+    const like: Like = { id: mockNextIds.like++, review: reviewId, user: user.username, created_at: new Date().toISOString() };
+    mockLikes.push(like);
+    const review = mockReviews.find((r) => r.id === reviewId);
+    if (review) {
+      review.like_count += 1;
+      socialApi.notifyLike(review.user, user.username, reviewId);
+    }
+    return delay(like);
+  },
+
+  removeLike: async (likeId: number): Promise<void> => {
+    const index = mockLikes.findIndex((l) => l.id === likeId);
+    if (index === -1) return delay(undefined);
+    const [removed] = mockLikes.splice(index, 1);
+    const review = mockReviews.find((r) => r.id === removed.review);
+    if (review) review.like_count = Math.max(0, review.like_count - 1);
+    return delay(undefined);
+  },
+
+  // --- BOOKMARKS ---
+  getBookmarks: async (): Promise<Bookmark[]> => {
+    const user = requireCurrentUser();
+    return delay(mockBookmarks.filter((b) => b.user === user.username));
+  },
+
+  addBookmark: async (reviewId: number): Promise<Bookmark> => {
+    const user = requireCurrentUser();
+    const bookmark: Bookmark = {
+      id: mockNextIds.bookmark++,
+      review: reviewId,
+      user: user.username,
+      created_at: new Date().toISOString(),
+    };
+    mockBookmarks.push(bookmark);
+    return delay(bookmark);
+  },
+
+  removeBookmark: async (bookmarkId: number): Promise<void> => {
+    const index = mockBookmarks.findIndex((b) => b.id === bookmarkId);
+    if (index !== -1) mockBookmarks.splice(index, 1);
+    return delay(undefined);
+  },
+
+  // --- FAVORITES ---
+  getFavorites: async (): Promise<Favorite[]> => {
+    const user = requireCurrentUser();
+    return delay(mockFavorites.filter((f) => f.user === user.username));
+  },
+
+  addFavorite: async (bookId: number): Promise<Favorite> => {
+    const user = requireCurrentUser();
+    const book = mockBooks.find((b) => b.id === bookId);
+    if (!book) fail('Book not found');
+    const favorite: Favorite = {
+      id: mockNextIds.favorite++,
+      book,
+      user: user.username,
+      created_at: new Date().toISOString(),
+    };
+    mockFavorites.push(favorite);
+    return delay(favorite);
+  },
+
+  removeFavorite: async (favoriteId: number): Promise<void> => {
+    const index = mockFavorites.findIndex((f) => f.id === favoriteId);
+    if (index !== -1) mockFavorites.splice(index, 1);
+    return delay(undefined);
+  },
+
+  // --- READING LISTS ---
+  getReadingLists: async (): Promise<ReadingList[]> => delay([...mockReadingLists]),
+
+  createReadingList: async (name: string): Promise<ReadingList> => {
+    const list: ReadingList = { id: mockNextIds.readingList++, name, item_count: 0, created_at: new Date().toISOString() };
+    mockReadingLists.push(list);
+    return delay(list);
+  },
+
+  deleteReadingList: async (id: number): Promise<void> => {
+    const index = mockReadingLists.findIndex((l) => l.id === id);
+    if (index !== -1) mockReadingLists.splice(index, 1);
+    return delay(undefined);
+  },
+
+  getReadingListItems: async (readingListId: number): Promise<ReadingListItem[]> =>
+    delay(mockReadingListItems.filter((i) => i.reading_list_id === readingListId)),
+
+  addBookToList: async (readingListId: number, bookId: number): Promise<ReadingListItem> => {
+    const book = mockBooks.find((b) => b.id === bookId);
+    if (!book) fail('Book not found');
+    const item: ReadingListItem = {
+      id: mockNextIds.readingListItem++,
+      reading_list_id: readingListId,
+      book,
+      added_at: new Date().toISOString(),
+    };
+    mockReadingListItems.push(item);
+    const list = mockReadingLists.find((l) => l.id === readingListId);
+    if (list) list.item_count += 1;
+    return delay(item);
+  },
+
+  removeBookFromList: async (itemId: number): Promise<void> => {
+    const index = mockReadingListItems.findIndex((i) => i.id === itemId);
+    if (index === -1) return delay(undefined);
+    const [removed] = mockReadingListItems.splice(index, 1);
+    const list = mockReadingLists.find((l) => l.id === removed.reading_list_id);
+    if (list) list.item_count = Math.max(0, list.item_count - 1);
+    return delay(undefined);
+  },
+};
+
+// Every call persists the current in-memory dataset to localStorage afterward,
+// so mock state survives a full page reload within the same browser session.
+type AsyncFn = (...args: never[]) => Promise<unknown>;
+export const mockApi = Object.fromEntries(
+  Object.entries(mockApiRaw).map(([key, fn]) => [
+    key,
+    async (...args: Parameters<AsyncFn>) => {
+      const result = await (fn as AsyncFn)(...args);
+      persistMockData();
+      return result;
+    },
+  ])
+) as typeof mockApiRaw;

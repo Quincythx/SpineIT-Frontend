@@ -47,7 +47,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     fetchUserProfile();
 
-    // Listen for auth change events (e.g. token refresh failures)
     const handleAuthChange = () => {
       fetchUserProfile();
     };
@@ -72,7 +71,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     try {
       await api.register(userData);
-      // Auto login after successful registration
       await login({ username: userData.username, password: userData.password });
     } finally {
       setIsLoading(false);
