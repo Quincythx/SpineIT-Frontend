@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { socialApi } from '../services/socialApi';
+import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export function FollowButton({ username }: { username: string }) {
@@ -13,7 +13,7 @@ export function FollowButton({ username }: { username: string }) {
       setIsLoading(false);
       return;
     }
-    socialApi.isFollowing(username).then((v) => {
+    api.isFollowing(username).then((v) => {
       setIsFollowing(v);
       setIsLoading(false);
     });
@@ -33,10 +33,10 @@ export function FollowButton({ username }: { username: string }) {
   const handleClick = async () => {
     setIsLoading(true);
     if (isFollowing) {
-      await socialApi.unfollowUser(username);
+      await api.unfollowUser(username);
       setIsFollowing(false);
     } else {
-      await socialApi.followUser(username);
+      await api.followUser(username);
       setIsFollowing(true);
     }
     setIsLoading(false);

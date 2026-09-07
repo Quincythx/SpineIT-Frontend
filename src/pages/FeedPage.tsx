@@ -2,27 +2,31 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PenLine } from 'lucide-react';
 import { api } from '../services/api';
-import { socialApi } from '../services/socialApi';
 import type { Review } from '../types/api';
 import { useAuth } from '../context/AuthContext';
 import { ReviewCard } from '../components/ReviewCard';
 import { TrendingDiscussions } from '../components/TrendingDiscussions';
 
-type FeedTab = 'discover' | 'following';
+type FeedTab = 'public' | 'following';
 
 export function FeedPage() {
   const { user } = useAuth();
-  const [tab, setTab] = useState<FeedTab>('discover');
+  const [tab, setTab] = useState<FeedTab>('public');
   const [reviews, setReviews] = useState<Review[] | null>(null);
-  const [followingUsernames, setFollowingUsernames] = useState<string[] | null>(null);
+  const [nextCursorUrl, setNextCursorUrl] = useState<string | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    setReviews(null);
+    setError(null);
     api
-      .getReviews()
-      .then((res) => {
-        if (!cancelled) setReviews(res.results);
+      .getFeed({ scope: tab })
+      .then((page) => {
+        if (cancelled) return;
+        setReviews(page.results);
+        setNextCursorUrl(page.next);
       })
       .catch(() => {
         if (!cancelled) setError('Could not load the feed right now. Please try again later.');
@@ -30,17 +34,21 @@ export function FeedPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [tab]);
 
-  useEffect(() => {
-    if (!user) return;
-    socialApi.getFollowingUsernames(user.username).then(setFollowingUsernames);
-  }, [user]);
-
-  const visibleReviews =
-    tab === 'following' && followingUsernames
-      ? reviews?.filter((r) => followingUsernames.includes(r.user))
-      : reviews;
+  const handleLoadMore = async () => {
+    if (!nextCursorUrl) return;
+    setIsLoadingMore(true);
+    try {
+      const page = await api.getFeed({ scope: tab, cursorUrl: nextCursorUrl });
+      setReviews((prev) => [...(prev ?? []), ...page.results]);
+      setNextCursorUrl(page.next);
+    } catch {
+      setError('Could not load more reviews right now.');
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-16 py-8">
@@ -48,9 +56,9 @@ export function FeedPage() {
         <div className="flex gap-2 pb-8">
           <button
             type="button"
-            onClick={() => setTab('discover')}
+            onClick={() => setTab('public')}
             className={`font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-5 py-2.5 ${
-              tab === 'discover' ? 'bg-[#00464a] text-white' : 'text-[#3f4949]'
+              tab === 'public' ? 'bg-[#00464a] text-white' : 'text-[#3f4949]'
             }`}
           >
             Discover
@@ -75,7 +83,7 @@ export function FeedPage() {
           {!error && reviews === null && (
             <p className="font-['Inter'] text-[#3f4949]">Loading the feed…</p>
           )}
-          {tab === 'discover' && reviews !== null && reviews.length === 0 && (
+          {tab === 'public' && reviews !== null && reviews.length === 0 && (
             <p className="font-['Inter'] text-[#3f4949]">
               No reviews yet — be the first to{' '}
               <Link to="/write" className="text-[#00464a] underline">
@@ -84,18 +92,28 @@ export function FeedPage() {
               .
             </p>
           )}
-          {tab === 'following' && visibleReviews !== undefined && visibleReviews?.length === 0 && (
+          {tab === 'following' && reviews !== null && reviews.length === 0 && (
             <p className="font-['Inter'] text-[#3f4949]">
               No reviews from readers you follow yet — visit a{' '}
-              <Link to="/" className="text-[#00464a] underline" onClick={() => setTab('discover')}>
+              <Link to="/" className="text-[#00464a] underline" onClick={() => setTab('public')}>
                 book or review
               </Link>{' '}
               to find people to follow.
             </p>
           )}
-          {visibleReviews?.map((review) => (
+          {reviews?.map((review) => (
             <ReviewCard key={review.id} review={review} />
           ))}
+          {nextCursorUrl && (
+            <button
+              type="button"
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              className="self-center font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#00464a] border-2 border-[#00464a] rounded-xl px-6 py-3 disabled:opacity-60"
+            >
+              {isLoadingMore ? 'Loading…' : 'Load More'}
+            </button>
+          )}
         </div>
 
         <div className="lg:col-span-1">

@@ -7,8 +7,8 @@ import type {
   Bookmark,
   Like,
   Favorite,
-  ReadingList,
-  ReadingListItem,
+  Follow,
+  NotificationType,
 } from '../types/api';
 
 function hoursAgo(h: number): string {
@@ -216,29 +216,17 @@ const SEED_BOOKMARKS: Bookmark[] = [
 
 const SEED_FAVORITES: Favorite[] = [];
 
-const SEED_READING_LISTS: ReadingList[] = [{ id: 1, name: 'My Shelf', item_count: 1, created_at: daysAgo(10) }];
-
-const SEED_READING_LIST_ITEMS: ReadingListItem[] = [
-  { id: 1, reading_list_id: 1, book: SEED_BOOKS[4], added_at: daysAgo(2) },
-];
-
-// Follows and notifications have no equivalent in the real backend contract
-// yet, so these types live only here (mock-only), not in src/types/api.ts.
-export interface Follow {
-  id: number;
-  follower: string;
-  following: string;
-  created_at: string;
-}
-
-export type NotificationType = 'like' | 'comment' | 'follow';
-
-export interface AppNotification {
+// Mock notification rows need one field the real API response never sends
+// (`recipient`) purely so the in-memory store can be filtered by owner --
+// a real backend query does that scoping server-side instead. mockApi's
+// getNotifications() strips it back out before returning, matching the
+// real Notification shape exactly.
+export interface MockNotification {
   id: number;
   recipient: string;
   actor: string;
   type: NotificationType;
-  reviewId?: number;
+  review: number | null;
   read: boolean;
   created_at: string;
 }
@@ -248,12 +236,13 @@ const SEED_FOLLOWS: Follow[] = [
   { id: 2, follower: 'david_chen', following: 'jane_reader', created_at: daysAgo(4) },
 ];
 
-const SEED_NOTIFICATIONS: AppNotification[] = [
+const SEED_NOTIFICATIONS: MockNotification[] = [
   {
     id: 1,
     recipient: 'jane_reader',
     actor: 'elena_rostova',
     type: 'follow',
+    review: null,
     read: false,
     created_at: daysAgo(4),
   },
@@ -267,8 +256,6 @@ const SEED_NEXT_IDS = {
   like: 1,
   bookmark: 3,
   favorite: 1,
-  readingList: 2,
-  readingListItem: 2,
   follow: 3,
   notification: 2,
 };
@@ -288,10 +275,8 @@ interface Snapshot {
   likes: Like[];
   bookmarks: Bookmark[];
   favorites: Favorite[];
-  readingLists: ReadingList[];
-  readingListItems: ReadingListItem[];
   follows: Follow[];
-  notifications: AppNotification[];
+  notifications: MockNotification[];
   nextIds: typeof SEED_NEXT_IDS;
 }
 
@@ -313,10 +298,8 @@ export const mockComments: Comment[] = snapshot?.comments ?? [...SEED_COMMENTS];
 export const mockLikes: Like[] = snapshot?.likes ?? [...SEED_LIKES];
 export const mockBookmarks: Bookmark[] = snapshot?.bookmarks ?? [...SEED_BOOKMARKS];
 export const mockFavorites: Favorite[] = snapshot?.favorites ?? [...SEED_FAVORITES];
-export const mockReadingLists: ReadingList[] = snapshot?.readingLists ?? [...SEED_READING_LISTS];
-export const mockReadingListItems: ReadingListItem[] = snapshot?.readingListItems ?? [...SEED_READING_LIST_ITEMS];
 export const mockFollows: Follow[] = snapshot?.follows ?? [...SEED_FOLLOWS];
-export const mockNotifications: AppNotification[] = snapshot?.notifications ?? [...SEED_NOTIFICATIONS];
+export const mockNotifications: MockNotification[] = snapshot?.notifications ?? [...SEED_NOTIFICATIONS];
 export const mockNextIds = snapshot?.nextIds ?? { ...SEED_NEXT_IDS };
 
 export function persistMockData() {
@@ -328,8 +311,6 @@ export function persistMockData() {
     likes: mockLikes,
     bookmarks: mockBookmarks,
     favorites: mockFavorites,
-    readingLists: mockReadingLists,
-    readingListItems: mockReadingListItems,
     follows: mockFollows,
     notifications: mockNotifications,
     nextIds: mockNextIds,

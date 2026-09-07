@@ -1,23 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, User as UserIcon, Sparkles } from 'lucide-react';
+import { User as UserIcon, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { socialApi } from '../services/socialApi';
-import type { Review, ReadingListItem } from '../types/api';
+import type { Review } from '../types/api';
 import { Avatar } from '../components/Avatar';
 import { ProfileReviewCard } from '../components/ProfileReviewCard';
-import { ReadingStats } from '../components/ReadingStats';
-import { ReadingGoalWidget } from '../components/ReadingGoalWidget';
-import { SHELVES } from '../utils/shelves';
-
-const CURRENTLY_READING_SHELF = SHELVES[1];
 
 export function ProfilePage() {
   const { user, refreshProfile, logout } = useAuth();
   const navigate = useNavigate();
   const [reviews, setReviews] = useState<Review[] | null>(null);
-  const [currentlyReading, setCurrentlyReading] = useState<ReadingListItem | null>(null);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioDraft, setBioDraft] = useState(user?.bio ?? '');
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
@@ -27,21 +20,8 @@ export function ProfilePage() {
   useEffect(() => {
     if (!user) return;
     api.getMyReviews().then(setReviews).catch(() => setReviews([]));
-    socialApi.getFollowerCount(user.username).then(setFollowerCount);
-    socialApi.getFollowingCount(user.username).then(setFollowingCount);
-    api
-      .getReadingLists()
-      .then((lists) => {
-        const currentlyReadingList = lists.find((l) => l.name === CURRENTLY_READING_SHELF);
-        if (!currentlyReadingList) return;
-        return api.getReadingListItems(currentlyReadingList.id).then((items) => {
-          const mostRecent = [...items].sort(
-            (a, b) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime()
-          )[0];
-          setCurrentlyReading(mostRecent ?? null);
-        });
-      })
-      .catch(() => {});
+    api.getFollowerCount(user.username).then(setFollowerCount);
+    api.getFollowingCount(user.username).then(setFollowingCount);
   }, [user]);
 
   if (!user) {
@@ -55,7 +35,7 @@ export function ProfilePage() {
             Join the Community
           </h1>
           <p className="font-['Inter'] text-base text-[#3f4949] text-center">
-            Discover your next great read, track your library, and connect with fellow bibliophiles in our digital
+            Discover your next great read, share what you think, and connect with fellow readers in our digital
             reading nook.
           </p>
         </div>
@@ -64,16 +44,16 @@ export function ProfilePage() {
           <div className="hidden sm:grid blur-[6px] opacity-40 p-6 lg:p-12 grid-cols-3 gap-6" aria-hidden>
             <div className="col-span-1 bg-white border border-[#bec8c9]/50 rounded p-6 flex flex-col gap-4">
               <p className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#3f4949] uppercase">
-                Reading Stats
+                Review Stats
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="font-['Playfair_Display'] font-semibold text-2xl text-[#00464a]">142</p>
-                  <p className="font-['Inter'] text-sm text-[#3f4949]">Books Read</p>
+                  <p className="font-['Playfair_Display'] font-semibold text-2xl text-[#00464a]">38</p>
+                  <p className="font-['Inter'] text-sm text-[#3f4949]">Reviews Written</p>
                 </div>
                 <div>
-                  <p className="font-['Playfair_Display'] font-semibold text-2xl text-[#00464a]">38</p>
-                  <p className="font-['Inter'] text-sm text-[#3f4949]">Reviews Shared</p>
+                  <p className="font-['Playfair_Display'] font-semibold text-2xl text-[#00464a]">142</p>
+                  <p className="font-['Inter'] text-sm text-[#3f4949]">Likes Received</p>
                 </div>
               </div>
             </div>
@@ -81,14 +61,14 @@ export function ProfilePage() {
               <div className="w-24 h-36 bg-[#e5e2e1] rounded-sm shrink-0" />
               <div className="flex flex-col gap-2 w-full">
                 <p className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#7e5700] uppercase">
-                  Currently Reading
+                  Latest Review
                 </p>
                 <p className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">
                   The Echo of Old Pages
                 </p>
-                <div className="bg-[#e5e2e1] h-2 rounded-xl w-full">
-                  <div className="bg-[#00464a] h-2 rounded-xl w-1/3" />
-                </div>
+                <p className="font-['Inter'] text-sm text-[#3f4949]">
+                  "A quietly devastating meditation on memory..."
+                </p>
               </div>
             </div>
           </div>
@@ -99,11 +79,10 @@ export function ProfilePage() {
                 <Sparkles className="w-6 h-6 text-[#6e2a00]" />
               </div>
               <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#00464a] text-center pt-2">
-                Your Library Awaits
+                Join the Conversation
               </h2>
               <p className="font-['Inter'] text-base text-[#3f4949] text-center">
-                Unlock your reading journey. Create a profile to track your progress, curate shelves, and connect
-                with other readers.
+                Create a profile to share your reviews, build a following, and connect with fellow readers.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 pt-4 w-full sm:w-auto">
                 <Link
@@ -240,11 +219,10 @@ export function ProfilePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2 flex flex-col gap-8 lg:gap-12">
-          <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b] border-b border-[#e5e2e1] pb-[17px]">
-            My Sanctuary
-          </h2>
+      <div className="max-w-[768px] mx-auto flex flex-col gap-8 lg:gap-12">
+        <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b] border-b border-[#e5e2e1] pb-[17px]">
+          My Sanctuary
+        </h2>
           {reviews === null && <p className="font-['Inter'] text-[#3f4949]">Loading…</p>}
           {reviews?.length === 0 && (
             <p className="font-['Inter'] text-[#3f4949]">
@@ -258,33 +236,6 @@ export function ProfilePage() {
           {reviews?.map((review) => (
             <ProfileReviewCard key={review.id} review={review} />
           ))}
-        </div>
-
-        <div className="lg:col-span-1 flex flex-col gap-6">
-          {reviews && <ReadingGoalWidget username={user.username} reviews={reviews} />}
-          {reviews && <ReadingStats reviews={reviews} />}
-          {currentlyReading && (
-            <div className="bg-[#f6f3f2] drop-shadow-[0px_4px_10px_rgba(0,96,100,0.05)] rounded-lg p-6 flex flex-col gap-2">
-              <h3 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">Currently Reading</h3>
-              <div className="flex gap-4 py-3">
-                <div className="w-20 h-28 bg-[#e5e2e1] flex items-center justify-center shrink-0">
-                  <BookOpen className="w-6 h-6 text-[#3f4949]" />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <h4 className="font-['Playfair_Display'] font-semibold text-sm text-[#1c1b1b]">
-                    {currentlyReading.book.title}
-                  </h4>
-                  <p className="font-['Inter'] text-sm text-[#3f4949]">{currentlyReading.book.author}</p>
-                  {currentlyReading.book.genre && (
-                    <span className="bg-[rgba(255,222,172,0.5)] text-[#1c1b1b] text-xs font-medium px-2 py-1 rounded-sm w-fit">
-                      {currentlyReading.book.genre}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -99,21 +99,6 @@ export interface Favorite {
   created_at: string;
 }
 
-// ReadingList model matching reviews.ReadingList
-export interface ReadingList {
-  id: number;
-  name: string;
-  item_count: number;
-  created_at: string;
-}
-
-// ReadingListItem model matching reviews.ReadingListItem
-export interface ReadingListItem {
-  id: number;
-  reading_list_id: number;
-  book: Book;
-  added_at: string;
-}
 
 // JWT Authentication response tokens from /api/auth/login/
 export interface AuthTokens {
@@ -140,6 +125,35 @@ export interface RegisterResult {
   user: User;
   access: string;
   refresh: string;
+}
+
+// Follow model matching social.Follow
+export interface Follow {
+  id: number;
+  follower: string;   // Username of the follower
+  following: string;  // Username of the person being followed
+  created_at: string;
+}
+
+// Notification model matching social.Notification. There is no `recipient`
+// field -- GET /notifications/ is always scoped to "your own" by the backend.
+export type NotificationType = 'like' | 'comment' | 'follow';
+
+export interface Notification {
+  id: number;
+  actor: string;         // Username of whoever triggered it
+  type: NotificationType;
+  review: number | null; // Review ID this relates to, null for a follow
+  read: boolean;
+  created_at: string;
+}
+
+// DRF CursorPagination wrapper shape -- used by /feed/. Unlike
+// PaginatedResponse, there is no `count`; `next`/`previous` are full URLs.
+export interface CursorPage<T> {
+  next: string | null;
+  previous: string | null;
+  results: T[];
 }
 
 // DRF PageNumberPagination wrapper shape

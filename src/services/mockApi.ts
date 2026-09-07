@@ -9,12 +9,14 @@ import type {
   Like,
   Bookmark,
   Favorite,
-  ReadingList,
-  ReadingListItem,
   PaginatedResponse,
   SendCodePayload,
   VerifyCodeAndRegisterPayload,
   RegisterResult,
+  Follow,
+  Notification,
+  NotificationType,
+  CursorPage,
 } from '../types/api';
 import {
   mockGenres,
@@ -25,12 +27,11 @@ import {
   mockLikes,
   mockBookmarks,
   mockFavorites,
-  mockReadingLists,
-  mockReadingListItems,
+  mockFollows,
+  mockNotifications,
   mockNextIds,
   persistMockData,
 } from './mockData';
-import { socialApi } from './socialApi';
 
 function delay<T>(value: T, ms = 250): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(value), ms));
@@ -70,6 +71,29 @@ function recalcBookStats(bookId: number) {
   book.average_rating = reviewsForBook.length
     ? Math.round((reviewsForBook.reduce((sum, r) => sum + r.rating, 0) / reviewsForBook.length) * 10) / 10
     : null;
+}
+
+// Simulates what the real backend's signals do automatically on Like/Comment/
+// Follow -- only ever called from within this file, never by the client.
+function notify(recipient: string, actor: string, type: NotificationType, reviewId?: number) {
+  if (recipient === actor) return;
+  mockNotifications.push({
+    id: mockNextIds.notification++,
+    recipient,
+    actor,
+    type,
+    review: reviewId ?? null,
+    read: false,
+    created_at: new Date().toISOString(),
+  });
+}
+
+function notifyLike(recipient: string, actor: string, reviewId: number) {
+  notify(recipient, actor, 'like', reviewId);
+}
+
+function notifyComment(recipient: string, actor: string, reviewId: number) {
+  notify(recipient, actor, 'comment', reviewId);
 }
 
 const mockApiRaw = {
@@ -248,7 +272,7 @@ const mockApiRaw = {
     };
     mockComments.push(comment);
     const review = mockReviews.find((r) => r.id === reviewId);
-    if (review) socialApi.notifyComment(review.user, user.username, reviewId);
+    if (review) notifyComment(review.user, user.username, reviewId);
     return delay(comment);
   },
 
@@ -268,7 +292,7 @@ const mockApiRaw = {
     const review = mockReviews.find((r) => r.id === reviewId);
     if (review) {
       review.like_count += 1;
-      socialApi.notifyLike(review.user, user.username, reviewId);
+      notifyLike(review.user, user.username, reviewId);
     }
     return delay(like);
   },
@@ -332,46 +356,81 @@ const mockApiRaw = {
     return delay(undefined);
   },
 
-  // --- READING LISTS ---
-  getReadingLists: async (): Promise<ReadingList[]> => delay([...mockReadingLists]),
-
-  createReadingList: async (name: string): Promise<ReadingList> => {
-    const list: ReadingList = { id: mockNextIds.readingList++, name, item_count: 0, created_at: new Date().toISOString() };
-    mockReadingLists.push(list);
-    return delay(list);
+  // --- SOCIAL: PUBLIC PROFILES & FOLLOWS ---
+  getUserByUsername: async (username: string): Promise<User> => {
+    const user = mockUsers.find((u) => u.username.toLowerCase() === username.toLowerCase());
+    if (!user) fail('User not found');
+    return delay(user);
   },
 
-  deleteReadingList: async (id: number): Promise<void> => {
-    const index = mockReadingLists.findIndex((l) => l.id === id);
-    if (index !== -1) mockReadingLists.splice(index, 1);
-    return delay(undefined);
+  isFollowing: async (username: string): Promise<boolean> => {
+    const me = requireCurrentUser();
+    return delay(mockFollows.some((f) => f.follower === me.username && f.following === username));
   },
 
-  getReadingListItems: async (readingListId: number): Promise<ReadingListItem[]> =>
-    delay(mockReadingListItems.filter((i) => i.reading_list_id === readingListId)),
-
-  addBookToList: async (readingListId: number, bookId: number): Promise<ReadingListItem> => {
-    const book = mockBooks.find((b) => b.id === bookId);
-    if (!book) fail('Book not found');
-    const item: ReadingListItem = {
-      id: mockNextIds.readingListItem++,
-      reading_list_id: readingListId,
-      book,
-      added_at: new Date().toISOString(),
+  followUser: async (username: string): Promise<Follow> => {
+    const me = requireCurrentUser();
+    if (me.username === username) fail("You can't follow yourself.");
+    const existing = mockFollows.find((f) => f.follower === me.username && f.following === username);
+    if (existing) return delay(existing);
+    const follow: Follow = {
+      id: mockNextIds.follow++,
+      follower: me.username,
+      following: username,
+      created_at: new Date().toISOString(),
     };
-    mockReadingListItems.push(item);
-    const list = mockReadingLists.find((l) => l.id === readingListId);
-    if (list) list.item_count += 1;
-    return delay(item);
+    mockFollows.push(follow);
+    notify(username, me.username, 'follow');
+    return delay(follow);
   },
 
-  removeBookFromList: async (itemId: number): Promise<void> => {
-    const index = mockReadingListItems.findIndex((i) => i.id === itemId);
-    if (index === -1) return delay(undefined);
-    const [removed] = mockReadingListItems.splice(index, 1);
-    const list = mockReadingLists.find((l) => l.id === removed.reading_list_id);
-    if (list) list.item_count = Math.max(0, list.item_count - 1);
+  unfollowUser: async (username: string): Promise<void> => {
+    const me = requireCurrentUser();
+    const index = mockFollows.findIndex((f) => f.follower === me.username && f.following === username);
+    if (index !== -1) mockFollows.splice(index, 1);
     return delay(undefined);
+  },
+
+  getFollowerCount: async (username: string): Promise<number> =>
+    delay(mockFollows.filter((f) => f.following === username).length),
+
+  getFollowingCount: async (username: string): Promise<number> =>
+    delay(mockFollows.filter((f) => f.follower === username).length),
+
+  getFollowingUsernames: async (username: string): Promise<string[]> =>
+    delay(mockFollows.filter((f) => f.follower === username).map((f) => f.following)),
+
+  // --- SOCIAL: NOTIFICATIONS ---
+  getNotifications: async (): Promise<Notification[]> => {
+    const me = requireCurrentUser();
+    return delay(
+      mockNotifications
+        .filter((n) => n.recipient === me.username)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .map((n) => ({ id: n.id, actor: n.actor, type: n.type, review: n.review, read: n.read, created_at: n.created_at }))
+    );
+  },
+
+  markAllNotificationsRead: async (): Promise<void> => {
+    const me = requireCurrentUser();
+    mockNotifications.forEach((n) => {
+      if (n.recipient === me.username) n.read = true;
+    });
+    return delay(undefined);
+  },
+
+  // --- SOCIAL: FEED ---
+  getFeed: async (params: { scope?: 'public' | 'following'; cursorUrl?: string }): Promise<CursorPage<Review>> => {
+    void params.cursorUrl; // mock mode always returns everything in one page
+    let results = [...mockReviews].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    if (params.scope === 'following') {
+      const me = requireCurrentUser();
+      const followingUsernames = mockFollows.filter((f) => f.follower === me.username).map((f) => f.following);
+      results = results.filter((r) => followingUsernames.includes(r.user));
+    }
+    return delay({ next: null, previous: null, results });
   },
 };
 

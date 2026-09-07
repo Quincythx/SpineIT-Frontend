@@ -11,12 +11,13 @@ import type {
   Like,
   Bookmark,
   Favorite,
-  ReadingList,
-  ReadingListItem,
   PaginatedResponse,
   SendCodePayload,
   VerifyCodeAndRegisterPayload,
   RegisterResult,
+  Follow,
+  Notification,
+  CursorPage,
 } from '../types/api';
 import { mockApi } from './mockApi';
 
@@ -82,6 +83,17 @@ function toArray<T>(data: PaginatedResponse<T> | T[]): T[] {
   if (Array.isArray(data)) return data;
   if (data && Array.isArray(data.results)) return data.results;
   return [];
+}
+
+// The backend's Follow endpoints filter by username, so looking up "my own"
+// follow relationships needs my own username, not just a token.
+function currentUsername(): string | null {
+  try {
+    const raw = localStorage.getItem('spineit_user');
+    return raw ? (JSON.parse(raw) as User).username : null;
+  } catch {
+    return null;
+  }
 }
 
 // ==========================================
@@ -273,39 +285,84 @@ const realApi = {
     await apiClient.delete(`/favorites/${favoriteId}/`);
   },
 
-  // --- READING LISTS ENDPOINTS ---
-  getReadingLists: async () => {
-    const res = await apiClient.get<PaginatedResponse<ReadingList> | ReadingList[]>('/reading-lists/');
-    return toArray(res.data);
-  },
-
-  createReadingList: async (name: string) => {
-    const res = await apiClient.post<ReadingList>('/reading-lists/', { name });
+  // --- SOCIAL: PUBLIC PROFILES & FOLLOWS ---
+  getUserByUsername: async (username: string) => {
+    const res = await apiClient.get<User>(`/users/${username}/`);
     return res.data;
   },
 
-  deleteReadingList: async (id: number) => {
-    await apiClient.delete(`/reading-lists/${id}/`);
+  isFollowing: async (username: string): Promise<boolean> => {
+    const me = currentUsername();
+    if (!me) return false;
+    const res = await apiClient.get<PaginatedResponse<Follow>>('/follows/', {
+      params: { follower: me, following: username },
+    });
+    return res.data.count > 0;
   },
 
-  getReadingListItems: async (readingListId: number) => {
-    const res = await apiClient.get<PaginatedResponse<ReadingListItem> | ReadingListItem[]>(
-      '/reading-list-items/',
-      { params: { reading_list: readingListId } }
-    );
-    return toArray(res.data);
+  followUser: async (username: string) => {
+    const res = await apiClient.post<Follow>('/follows/', { following: username });
+    return res.data;
   },
 
-  addBookToList: async (readingListId: number, bookId: number) => {
-    const res = await apiClient.post<ReadingListItem>('/reading-list-items/', {
-      reading_list_id: readingListId,
-      book_id: bookId,
+  unfollowUser: async (username: string) => {
+    const me = currentUsername();
+    if (!me) return;
+    const res = await apiClient.get<PaginatedResponse<Follow>>('/follows/', {
+      params: { follower: me, following: username },
+    });
+    const existing = res.data.results[0];
+    if (existing) await apiClient.delete(`/follows/${existing.id}/`);
+  },
+
+  getFollowerCount: async (username: string): Promise<number> => {
+    const res = await apiClient.get<PaginatedResponse<Follow>>('/follows/', {
+      params: { following: username },
+    });
+    return res.data.count;
+  },
+
+  getFollowingCount: async (username: string): Promise<number> => {
+    const res = await apiClient.get<PaginatedResponse<Follow>>('/follows/', {
+      params: { follower: username },
+    });
+    return res.data.count;
+  },
+
+  getFollowingUsernames: async (username: string): Promise<string[]> => {
+    const all: string[] = [];
+    let url: string | null = '/follows/';
+    let params: Record<string, unknown> | undefined = { follower: username };
+    while (url) {
+      const res: { data: PaginatedResponse<Follow> } = await apiClient.get(url, { params });
+      all.push(...res.data.results.map((f) => f.following));
+      url = res.data.next;
+      params = undefined; // `next` is already a full URL with query params baked in
+    }
+    return all;
+  },
+
+  // --- SOCIAL: NOTIFICATIONS (server-created only, never posted by the client) ---
+  getNotifications: async (): Promise<Notification[]> => {
+    const res = await apiClient.get<PaginatedResponse<Notification>>('/notifications/');
+    return res.data.results;
+  },
+
+  markAllNotificationsRead: async () => {
+    await apiClient.patch('/notifications/mark-read/');
+  },
+
+  // --- SOCIAL: FEED (cursor-paginated -- pass cursorUrl from a previous
+  // page's `next` to load more; omit it for the first page) ---
+  getFeed: async (params: { scope?: 'public' | 'following'; cursorUrl?: string }): Promise<CursorPage<Review>> => {
+    if (params.cursorUrl) {
+      const res = await apiClient.get<CursorPage<Review>>(params.cursorUrl);
+      return res.data;
+    }
+    const res = await apiClient.get<CursorPage<Review>>('/feed/', {
+      params: { scope: params.scope ?? 'public' },
     });
     return res.data;
-  },
-
-  removeBookFromList: async (itemId: number) => {
-    await apiClient.delete(`/reading-list-items/${itemId}/`);
   },
 };
 

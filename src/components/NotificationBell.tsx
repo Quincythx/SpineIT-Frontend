@@ -1,27 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell } from 'lucide-react';
-import { socialApi } from '../services/socialApi';
-import type { AppNotification } from '../services/mockData';
+import { api } from '../services/api';
+import type { Notification } from '../types/api';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
 
-function describe(n: AppNotification): string {
+function describe(n: Notification): string {
   if (n.type === 'like') return `${n.actor} liked your review`;
   if (n.type === 'comment') return `${n.actor} commented on your review`;
   return `${n.actor} started following you`;
 }
 
-function linkFor(n: AppNotification): string {
-  if (n.reviewId) return `/reviews/${n.reviewId}`;
+function linkFor(n: Notification): string {
+  if (n.review) return `/reviews/${n.review}`;
   return `/users/${n.actor}`;
 }
 
 export function NotificationBell() {
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const load = () => socialApi.getNotifications().then(setNotifications);
+  const load = () => api.getNotifications().then(setNotifications);
 
   useEffect(() => {
     load();
@@ -43,7 +43,7 @@ export function NotificationBell() {
     const next = !isOpen;
     setIsOpen(next);
     if (next && unreadCount > 0) {
-      await socialApi.markAllNotificationsRead();
+      await api.markAllNotificationsRead();
       load();
     }
   };

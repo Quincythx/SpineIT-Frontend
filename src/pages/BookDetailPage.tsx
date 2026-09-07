@@ -4,7 +4,6 @@ import { BookOpen, PenLine } from 'lucide-react';
 import { api } from '../services/api';
 import type { Book, Review } from '../types/api';
 import { useAuth } from '../context/AuthContext';
-import { ShelfSelector } from '../components/ShelfSelector';
 import { RatingDistribution } from '../components/RatingDistribution';
 import { BookPageReviewEntry } from '../components/BookPageReviewEntry';
 
@@ -75,17 +74,6 @@ export function BookDetailPage() {
             <p className="font-['Inter'] italic text-lg text-[#3f4949]">by {book.author}</p>
 
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-2 w-full sm:w-auto">
-              {user ? (
-                <ShelfSelector bookId={book.id} />
-              ) : (
-                <Link
-                  to="/login"
-                  className="border-2 border-[#00464a] text-[#00464a] font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-6 py-3 text-center w-full sm:w-auto"
-                >
-                  Log in to shelve this book
-                </Link>
-              )}
-
               {user &&
                 (myReview ? (
                   <Link

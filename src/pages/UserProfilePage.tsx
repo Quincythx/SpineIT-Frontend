@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { api } from '../services/api';
-import { socialApi } from '../services/socialApi';
 import type { Review, User } from '../types/api';
 import { useAuth } from '../context/AuthContext';
 import { Avatar } from '../components/Avatar';
@@ -20,7 +19,7 @@ export function UserProfilePage() {
 
   useEffect(() => {
     if (!username) return;
-    socialApi
+    api
       .getUserByUsername(username)
       .then(setProfileUser)
       .catch(() => setNotFound(true));
@@ -28,8 +27,8 @@ export function UserProfilePage() {
       .getReviews()
       .then((res) => setReviews(res.results.filter((r) => r.user === username)))
       .catch(() => setReviews([]));
-    socialApi.getFollowerCount(username).then(setFollowerCount);
-    socialApi.getFollowingCount(username).then(setFollowingCount);
+    api.getFollowerCount(username).then(setFollowerCount);
+    api.getFollowingCount(username).then(setFollowingCount);
   }, [username]);
 
   if (currentUser && username === currentUser.username) {
