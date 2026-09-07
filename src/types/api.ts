@@ -118,6 +118,27 @@ export interface AuthTokens {
   refresh: string;
 }
 
+// Step 1 of registration: request a 6-digit code sent to this email
+export interface SendCodePayload {
+  email: string;
+}
+
+// Step 2: the code plus the new account's details, submitted together
+export interface VerifyCodeAndRegisterPayload {
+  email: string;
+  code: string;
+  username: string;
+  password: string;
+}
+
+// Response from /auth/verify-code-register/ -- the account is created
+// already verified, and login tokens are returned in the same call.
+export interface RegisterResult {
+  user: User;
+  access: string;
+  refresh: string;
+}
+
 // DRF PageNumberPagination wrapper shape
 export interface PaginatedResponse<T> {
   count: number;

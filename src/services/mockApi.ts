@@ -12,6 +12,9 @@ import type {
   ReadingList,
   ReadingListItem,
   PaginatedResponse,
+  SendCodePayload,
+  VerifyCodeAndRegisterPayload,
+  RegisterResult,
 } from '../types/api';
 import {
   mockGenres,
@@ -79,13 +82,27 @@ const mockApiRaw = {
     return delay({ access: `mock-${match.id}`, refresh: `mock-refresh-${match.id}` });
   },
 
-  register: async ({ username, email }: { username: string; email: string; password: string }): Promise<User> => {
-    if (mockUsers.some((u) => u.username.toLowerCase() === username.toLowerCase())) {
-      fail('That username is already taken.');
+  sendVerificationCode: async ({ email }: SendCodePayload): Promise<{ detail: string }> => {
+    if (mockUsers.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
+      fail('A verified account with this email already exists.');
     }
-    const user: User = { id: mockNextIds.user++, username, email, bio: null, is_verified: false, avatar: null };
+    return delay({ detail: 'Verification code sent (mock). Use 000000 to continue.' });
+  },
+
+  verifyCodeAndRegister: async ({
+    email,
+    code,
+    username,
+  }: VerifyCodeAndRegisterPayload): Promise<RegisterResult> => {
+    if (mockUsers.some((u) => u.username.toLowerCase() === username.toLowerCase())) {
+      fail('A user with that username already exists.');
+    }
+    if (code !== '000000') {
+      fail('Invalid verification code. Use 000000 in demo mode.');
+    }
+    const user: User = { id: mockNextIds.user++, username, email, bio: null, is_verified: true, avatar: null };
     mockUsers.push(user);
-    return delay(user);
+    return delay({ user, access: `mock-${user.id}`, refresh: `mock-refresh-${user.id}` });
   },
 
   logout: async (): Promise<void> => {
@@ -111,7 +128,6 @@ const mockApiRaw = {
   requestPasswordReset: async (_email: string) => delay({ detail: 'Password reset email sent (mock).' }),
   confirmPasswordReset: async (_payload: { uid: string; token: string; new_password: string }) =>
     delay({ detail: 'Password reset (mock).' }),
-  verifyEmail: async (_payload: { uid: string; token: string }) => delay({ detail: 'Email verified (mock).' }),
 
   // --- BOOKS ---
   getBooks: async (params?: { search?: string; page?: number }): Promise<Book[]> => {

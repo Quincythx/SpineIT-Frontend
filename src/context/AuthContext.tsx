@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import type { User } from '../types/api';
+import type { User, VerifyCodeAndRegisterPayload } from '../types/api';
 import { api } from '../services/api';
 
 interface AuthContextType {
@@ -7,7 +7,8 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (credentials: { username: string; password: string }) => Promise<void>;
-  register: (userData: { username: string; email: string; password: string }) => Promise<void>;
+  sendVerificationCode: (email: string) => Promise<void>;
+  verifyCodeAndRegister: (payload: VerifyCodeAndRegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -67,11 +68,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const register = async (userData: { username: string; email: string; password: string }) => {
+  const sendVerificationCode = async (email: string) => {
     setIsLoading(true);
     try {
-      await api.register(userData);
-      await login({ username: userData.username, password: userData.password });
+      await api.sendVerificationCode({ email });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyCodeAndRegister = async (payload: VerifyCodeAndRegisterPayload) => {
+    setIsLoading(true);
+    try {
+      const result = await api.verifyCodeAndRegister(payload);
+      localStorage.setItem('spineit_access_token', result.access);
+      localStorage.setItem('spineit_refresh_token', result.refresh);
+      setUser(result.user);
+      localStorage.setItem('spineit_user', JSON.stringify(result.user));
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +119,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isLoading,
         isAuthenticated: !!user,
         login,
-        register,
+        sendVerificationCode,
+        verifyCodeAndRegister,
         logout,
         refreshProfile,
       }}

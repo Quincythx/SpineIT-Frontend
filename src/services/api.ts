@@ -14,6 +14,9 @@ import type {
   ReadingList,
   ReadingListItem,
   PaginatedResponse,
+  SendCodePayload,
+  VerifyCodeAndRegisterPayload,
+  RegisterResult,
 } from '../types/api';
 import { mockApi } from './mockApi';
 
@@ -92,8 +95,13 @@ const realApi = {
     return res.data;
   },
 
-  register: async (userData: { username: string; email: string; password: string }) => {
-    const res = await apiClient.post<User>('/auth/register/', userData);
+  sendVerificationCode: async (payload: SendCodePayload) => {
+    const res = await apiClient.post<{ detail: string }>('/auth/send-code/', payload);
+    return res.data;
+  },
+
+  verifyCodeAndRegister: async (payload: VerifyCodeAndRegisterPayload) => {
+    const res = await apiClient.post<RegisterResult>('/auth/verify-code-register/', payload);
     return res.data;
   },
 
@@ -125,11 +133,6 @@ const realApi = {
 
   confirmPasswordReset: async (payload: { uid: string; token: string; new_password: string }) => {
     const res = await apiClient.post('/auth/password-reset-confirm/', payload);
-    return res.data;
-  },
-
-  verifyEmail: async (payload: { uid: string; token: string }) => {
-    const res = await apiClient.post('/auth/verify-email/', payload);
     return res.data;
   },
 
