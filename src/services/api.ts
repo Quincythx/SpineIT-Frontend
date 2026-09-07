@@ -148,13 +148,10 @@ const realApi = {
   },
 
   createBook: async (input: CreateBookInput) => {
-    const formData = new FormData();
-    formData.append('title', input.title);
-    formData.append('author', input.author);
-    if (input.genre_id != null) formData.append('genre_id', String(input.genre_id));
-    if (input.cover_image) formData.append('cover_image', input.cover_image);
-    const res = await apiClient.post<Book>('/books/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    const res = await apiClient.post<Book>('/books/', {
+      title: input.title,
+      author: input.author,
+      genre_id: input.genre_id ?? undefined,
     });
     return res.data;
   },
@@ -184,6 +181,17 @@ const realApi = {
   },
 
   createReview: async (input: CreateReviewInput) => {
+    if (input.image) {
+      const formData = new FormData();
+      formData.append('book_id', String(input.book_id));
+      formData.append('review_text', input.review_text);
+      formData.append('rating', String(input.rating));
+      formData.append('image', input.image);
+      const res = await apiClient.post<Review>('/reviews/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return res.data;
+    }
     const res = await apiClient.post<Review>('/reviews/', input);
     return res.data;
   },

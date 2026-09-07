@@ -126,9 +126,9 @@ export function ReviewDetailPage() {
           <article className="bg-white drop-shadow-[0px_4px_10px_rgba(0,96,100,0.05)] rounded-lg p-6 sm:p-12 flex flex-col gap-8 sm:gap-12">
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 sm:gap-12">
               <Link to={`/books/${review.book.slug}`} className="sm:col-span-5">
-                {review.book.cover_image ? (
+                {review.image ? (
                   <img
-                    src={review.book.cover_image}
+                    src={review.image}
                     alt={review.book.title}
                     className="w-full max-w-[240px] sm:max-w-[300px] mx-auto sm:mx-0 aspect-[2/3] object-cover rounded-r shadow-[0px_4px_20px_0px_rgba(0,96,100,0.05)]"
                   />

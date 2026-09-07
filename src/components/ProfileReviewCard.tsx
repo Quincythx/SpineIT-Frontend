@@ -6,9 +6,9 @@ export function ProfileReviewCard({ review }: { review: Review }) {
   return (
     <article className="bg-white rounded-lg shadow-[0px_4px_20px_0px_rgba(0,96,100,0.05)] overflow-hidden flex w-full">
       <Link to={`/books/${review.book.slug}`} className="shrink-0">
-        {review.book.cover_image ? (
+        {review.image ? (
           <img
-            src={review.book.cover_image}
+            src={review.image}
             alt={review.book.title}
             className="w-[160px] h-full object-cover border-l-4 border-[#00464a]"
           />

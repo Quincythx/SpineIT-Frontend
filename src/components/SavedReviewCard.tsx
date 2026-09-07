@@ -9,9 +9,9 @@ export function SavedReviewCard({ review, onRemove }: { review: Review; onRemove
     <article className="bg-white border-l-[3px] border-[#00464a] drop-shadow-[0px_4px_10px_rgba(0,96,100,0.05)] rounded-lg pl-7 pr-6 py-6 flex-1 min-w-0 flex flex-col gap-6">
       <div className="flex gap-6 items-start">
         <Link to={`/books/${review.book.slug}`} className="shrink-0">
-          {review.book.cover_image ? (
+          {review.image ? (
             <img
-              src={review.book.cover_image}
+              src={review.image}
               alt={review.book.title}
               className="w-[106px] aspect-[2/3] object-cover shadow-[inset_4px_0px_8px_0px_rgba(0,0,0,0.1)]"
             />

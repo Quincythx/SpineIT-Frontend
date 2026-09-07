@@ -19,8 +19,8 @@ export function WritePage() {
   const [reviewText, setReviewText] = useState('');
   const [genres, setGenres] = useState<Genre[]>([]);
   const [selectedGenreId, setSelectedGenreId] = useState<number | null>(null);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [reviewImageFile, setReviewImageFile] = useState<File | null>(null);
+  const [reviewImagePreview, setReviewImagePreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,9 +53,9 @@ export function WritePage() {
     );
   }
 
-  const handleCoverChange = (file: File | null) => {
-    setCoverFile(file);
-    setCoverPreview(file ? URL.createObjectURL(file) : null);
+  const handleReviewImageChange = (file: File | null) => {
+    setReviewImageFile(file);
+    setReviewImagePreview(file ? URL.createObjectURL(file) : null);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -74,13 +74,13 @@ export function WritePage() {
               title: title.trim(),
               author: author.trim(),
               genre_id: selectedGenreId,
-              cover_image: coverFile,
             })
           ).id;
       const review = await api.createReview({
         book_id: bookId,
         review_text: reviewText.trim(),
         rating,
+        image: reviewImageFile,
       });
       navigate(`/reviews/${review.id}`);
     } catch {
@@ -110,47 +110,46 @@ export function WritePage() {
       <div className="max-w-[640px] mx-auto px-4 py-12 flex flex-col gap-12">
         {error && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-4 py-3">{error}</p>}
 
-        {existingBook ? (
+        {existingBook && (
           <div className="flex items-center gap-4 bg-[#f6f3f2] rounded p-4">
-            {existingBook.cover_image ? (
-              <img src={existingBook.cover_image} alt={existingBook.title} className="w-16 h-24 object-cover shrink-0" />
-            ) : (
-              <div className="w-16 h-24 bg-[#e5e2e1] flex items-center justify-center shrink-0">
-                <BookOpen className="w-6 h-6 text-[#3f4949]" />
-              </div>
-            )}
+            <div className="w-16 h-24 bg-[#e5e2e1] flex items-center justify-center shrink-0">
+              <BookOpen className="w-6 h-6 text-[#3f4949]" />
+            </div>
             <div>
               <p className="font-['Playfair_Display'] font-semibold text-xl text-[#1c1b1b]">{existingBook.title}</p>
               <p className="font-['Inter'] text-sm text-[#3f4949]">by {existingBook.author}</p>
             </div>
           </div>
-        ) : (
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-48 h-[288px] border border-[#bec8c9] rounded bg-[#f6f3f2] flex flex-col items-center justify-center gap-3 overflow-hidden shadow-[inset_4px_0px_8px_1px_rgba(0,0,0,0.1)]"
-            >
-              {coverPreview ? (
-                <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
-              ) : (
-                <>
-                  <Camera className="w-8 h-8 text-[#bec8c9]" />
-                  <span className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#bec8c9]">
-                    Upload Cover
-                  </span>
-                </>
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => handleCoverChange(e.target.files?.[0] ?? null)}
-            />
-          </div>
         )}
+
+        <div className="flex flex-col items-center gap-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-48 h-[288px] border border-[#bec8c9] rounded bg-[#f6f3f2] flex flex-col items-center justify-center gap-3 overflow-hidden shadow-[inset_4px_0px_8px_1px_rgba(0,0,0,0.1)]"
+          >
+            {reviewImagePreview ? (
+              <img src={reviewImagePreview} alt="Your photo" className="w-full h-full object-cover" />
+            ) : (
+              <>
+                <Camera className="w-8 h-8 text-[#bec8c9]" />
+                <span className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#bec8c9]">
+                  Add a Photo
+                </span>
+              </>
+            )}
+          </button>
+          <p className="font-['Inter'] text-xs text-[#6f7979] text-center max-w-[280px]">
+            Optional — a cover, a page that stayed with you, or a photo of yourself reading it. Whatever inspired this review.
+          </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleReviewImageChange(e.target.files?.[0] ?? null)}
+          />
+        </div>
 
         <div className="flex flex-col gap-6">
           {!existingBook && (

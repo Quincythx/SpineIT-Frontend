@@ -8,13 +8,9 @@ export function BookMiniCard({ book }: { book: Book }) {
       to={`/books/${book.slug}`}
       className="bg-white drop-shadow-[0px_4px_10px_rgba(0,96,100,0.05)] rounded-lg p-4 flex flex-col gap-4 flex-1 min-w-0"
     >
-      {book.cover_image ? (
-        <img src={book.cover_image} alt={book.title} className="w-full aspect-[2/3] object-cover rounded-md" />
-      ) : (
-        <div className="w-full aspect-[2/3] rounded-md bg-[#f6f3f2] flex items-center justify-center">
-          <BookOpen className="w-8 h-8 text-[#3f4949]" />
-        </div>
-      )}
+      <div className="w-full aspect-[2/3] rounded-md bg-[#f6f3f2] flex items-center justify-center">
+        <BookOpen className="w-8 h-8 text-[#3f4949]" />
+      </div>
       <div className="flex flex-col gap-1">
         <h3 className="font-['Inter'] font-bold text-base text-[#1c1b1b] truncate">{book.title}</h3>
         <p className="font-['Inter'] text-sm text-[#3f4949] truncate">{book.author}</p>

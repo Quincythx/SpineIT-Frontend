@@ -267,17 +267,9 @@ export function ProfilePage() {
             <div className="bg-[#f6f3f2] drop-shadow-[0px_4px_10px_rgba(0,96,100,0.05)] rounded-lg p-6 flex flex-col gap-2">
               <h3 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">Currently Reading</h3>
               <div className="flex gap-4 py-3">
-                {currentlyReading.book.cover_image ? (
-                  <img
-                    src={currentlyReading.book.cover_image}
-                    alt={currentlyReading.book.title}
-                    className="w-20 h-28 object-cover shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)]"
-                  />
-                ) : (
-                  <div className="w-20 h-28 bg-[#e5e2e1] flex items-center justify-center shrink-0">
-                    <BookOpen className="w-6 h-6 text-[#3f4949]" />
-                  </div>
-                )}
+                <div className="w-20 h-28 bg-[#e5e2e1] flex items-center justify-center shrink-0">
+                  <BookOpen className="w-6 h-6 text-[#3f4949]" />
+                </div>
                 <div className="flex flex-col gap-1">
                   <h4 className="font-['Playfair_Display'] font-semibold text-sm text-[#1c1b1b]">
                     {currentlyReading.book.title}

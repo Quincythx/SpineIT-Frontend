@@ -50,9 +50,9 @@ export function ReviewCard({ review }: { review: Review }) {
         to={`/books/${review.book.slug}`}
         className="bg-[#f6f3f2] flex items-center justify-center px-4 sm:px-6 py-6 sm:py-9"
       >
-        {review.book.cover_image ? (
+        {review.image ? (
           <img
-            src={review.book.cover_image}
+            src={review.image}
             alt={review.book.title}
             className="aspect-[2/3] h-[220px] sm:h-[280px] object-cover rounded-r-sm shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]"
           />
