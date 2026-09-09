@@ -177,7 +177,6 @@ const mockApiRaw = {
       slug: `${slugify(input.title)}-${mockNextIds.book}`,
       title: input.title,
       author: input.author,
-      genre: mockGenres.find((g) => g.id === input.genre_id)?.name ?? null,
       average_rating: null,
       review_count: 0,
       created_at: new Date().toISOString(),
@@ -191,11 +190,16 @@ const mockApiRaw = {
     search?: string;
     page?: number;
     book?: number;
+    genre?: number;
   }): Promise<PaginatedResponse<Review>> => {
     let results = [...mockReviews].sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
     if (params?.book) results = results.filter((r) => r.book.id === params.book);
+    if (params?.genre) {
+      const genreName = mockGenres.find((g) => g.id === params.genre)?.name;
+      results = results.filter((r) => r.genre === genreName);
+    }
     if (params?.search) {
       const q = params.search.toLowerCase();
       results = results.filter(
@@ -224,6 +228,7 @@ const mockApiRaw = {
       id: mockNextIds.review++,
       user: user.username,
       book,
+      genre: mockGenres.find((g) => g.id === input.genre_id)?.name ?? null,
       review_text: input.review_text,
       rating: input.rating,
       image: input.image ? URL.createObjectURL(input.image) : null,

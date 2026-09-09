@@ -163,13 +163,12 @@ const realApi = {
     const res = await apiClient.post<Book>('/books/', {
       title: input.title,
       author: input.author,
-      genre_id: input.genre_id ?? undefined,
     });
     return res.data;
   },
 
   // --- REVIEWS ENDPOINTS ---
-  getReviews: async (params?: { search?: string; page?: number; book?: number }) => {
+  getReviews: async (params?: { search?: string; page?: number; book?: number; genre?: number }) => {
     const res = await apiClient.get<PaginatedResponse<Review>>('/reviews/', { params });
     return { ...res.data, results: toArray(res.data) };
   },
@@ -196,6 +195,7 @@ const realApi = {
     if (input.image) {
       const formData = new FormData();
       formData.append('book_id', String(input.book_id));
+      if (input.genre_id != null) formData.append('genre_id', String(input.genre_id));
       formData.append('review_text', input.review_text);
       formData.append('rating', String(input.rating));
       formData.append('image', input.image);

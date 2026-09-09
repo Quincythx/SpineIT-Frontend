@@ -139,9 +139,9 @@ export function ReviewDetailPage() {
                 )}
               </Link>
               <div className="sm:col-span-7 flex flex-col justify-center gap-3 text-center sm:text-left items-center sm:items-start">
-                {review.book.genre && (
+                {review.genre && (
                   <span className="bg-[rgba(126,87,0,0.1)] border border-[rgba(126,87,0,0.2)] text-[#7e5700] text-xs font-medium px-3 py-1 rounded-xl w-fit">
-                    {review.book.genre}
+                    {review.genre}
                   </span>
                 )}
                 <Link to={`/books/${review.book.slug}`}>

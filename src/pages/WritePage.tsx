@@ -73,11 +73,11 @@ export function WritePage() {
             await api.createBook({
               title: title.trim(),
               author: author.trim(),
-              genre_id: selectedGenreId,
             })
           ).id;
       const review = await api.createReview({
         book_id: bookId,
+        genre_id: selectedGenreId,
         review_text: reviewText.trim(),
         rating,
         image: reviewImageFile,
@@ -204,33 +204,34 @@ export function WritePage() {
           />
         </div>
 
-        {!existingBook && (
-          <div className="flex flex-col gap-3">
-            <label className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#3f4949]">
-              Add Genre / Tag
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {genres.map((genre) => {
-                const isSelected = selectedGenreId === genre.id;
-                return (
-                  <button
-                    key={genre.id}
-                    type="button"
-                    onClick={() => setSelectedGenreId(isSelected ? null : genre.id)}
-                    className={`flex items-center gap-1 px-3 py-1 rounded-xl border text-xs font-medium ${
-                      isSelected
-                        ? 'bg-[rgba(255,222,172,0.5)] border-[rgba(126,87,0,0.2)] text-[#1c1b1b]'
-                        : 'bg-white border-[#e5e2e1] text-[#3f4949]'
-                    }`}
-                  >
-                    {!isSelected && <Plus className="w-[9px] h-[9px]" />}
-                    {genre.name}
-                  </button>
-                );
-              })}
-            </div>
+        <div className="flex flex-col gap-3">
+          <label className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#3f4949]">
+            Tag a Genre
+          </label>
+          <p className="font-['Inter'] text-xs text-[#6f7979] -mt-2">
+            Optional — pick whichever genre your take on this book fits best.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {genres.map((genre) => {
+              const isSelected = selectedGenreId === genre.id;
+              return (
+                <button
+                  key={genre.id}
+                  type="button"
+                  onClick={() => setSelectedGenreId(isSelected ? null : genre.id)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-xl border text-xs font-medium ${
+                    isSelected
+                      ? 'bg-[rgba(255,222,172,0.5)] border-[rgba(126,87,0,0.2)] text-[#1c1b1b]'
+                      : 'bg-white border-[#e5e2e1] text-[#3f4949]'
+                  }`}
+                >
+                  {!isSelected && <Plus className="w-[9px] h-[9px]" />}
+                  {genre.name}
+                </button>
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
     </form>
   );

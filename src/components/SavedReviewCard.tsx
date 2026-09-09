@@ -30,9 +30,9 @@ export function SavedReviewCard({ review, onRemove }: { review: Review; onRemove
             </Link>
             <p className="font-['Inter'] text-sm text-[#3f4949]">{review.book.author}</p>
           </div>
-          {review.book.genre && (
+          {review.genre && (
             <span className="bg-[rgba(126,87,0,0.1)] text-[#3f4949] text-xs font-medium px-3 py-1 rounded-xl w-fit mt-3">
-              {review.book.genre}
+              {review.genre}
             </span>
           )}
         </div>

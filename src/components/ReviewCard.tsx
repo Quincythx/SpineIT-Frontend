@@ -73,10 +73,10 @@ export function ReviewCard({ review }: { review: Review }) {
           by {review.book.author}
         </p>
 
-        {review.book.genre && (
+        {review.genre && (
           <div className="flex gap-2 pt-2">
             <span className="bg-[rgba(255,222,172,0.5)] text-[#604100] text-xs font-medium px-3 py-1 rounded-md">
-              {review.book.genre}
+              {review.genre}
             </span>
           </div>
         )}

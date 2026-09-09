@@ -18,13 +18,15 @@ export function ExplorePage() {
   const { user } = useAuth();
   const [query, setQuery] = useState('');
   const [genres, setGenres] = useState<Genre[]>([]);
-  const [selectedGenre, setSelectedGenre] = useState('');
+  const [selectedGenreId, setSelectedGenreId] = useState<number | null>(null);
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState<(typeof SORT_OPTIONS)[number]['value']>('newest');
   const [allBooks, setAllBooks] = useState<Book[] | null>(null);
   const [reviews, setReviews] = useState<Review[] | null>(null);
+  const [genreReviews, setGenreReviews] = useState<Review[] | null>(null);
 
-  const isFiltered = Boolean(query || selectedGenre || minRating > 0);
+  const isFiltered = Boolean(query || selectedGenreId || minRating > 0);
+  const selectedGenreName = genres.find((g) => g.id === selectedGenreId)?.name;
 
   useEffect(() => {
     api.getGenres().then(setGenres).catch(() => setGenres([]));
@@ -44,15 +46,29 @@ export function ExplorePage() {
     return () => clearTimeout(handle);
   }, [query]);
 
+  // Genre is a per-review tag, not a book property, so filtering by genre
+  // means fetching reviews tagged with it -- not filtering the book list.
+  useEffect(() => {
+    if (selectedGenreId == null) {
+      setGenreReviews(null);
+      return;
+    }
+    api
+      .getReviews({ genre: selectedGenreId })
+      .then((res) => setGenreReviews(res.results))
+      .catch(() => setGenreReviews([]));
+  }, [selectedGenreId]);
+
   const books = allBooks
-    ?.filter((b) => !selectedGenre || b.genre === selectedGenre)
-    .filter((b) => (b.average_rating ?? 0) >= minRating)
+    ?.filter((b) => (b.average_rating ?? 0) >= minRating)
     .sort((a, b) => {
       if (sortBy === 'rating') return (b.average_rating ?? 0) - (a.average_rating ?? 0);
       if (sortBy === 'title') return a.title.localeCompare(b.title);
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     })
     .slice(0, 12);
+
+  const displayedReviews = selectedGenreId != null ? genreReviews : reviews;
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-16 py-8 lg:py-12 flex flex-col items-center gap-12 lg:gap-20">
@@ -81,13 +97,13 @@ export function ExplorePage() {
 
         <div className="flex flex-wrap gap-3">
           <select
-            value={selectedGenre}
-            onChange={(e) => setSelectedGenre(e.target.value)}
+            value={selectedGenreId ?? ''}
+            onChange={(e) => setSelectedGenreId(e.target.value ? Number(e.target.value) : null)}
             className="bg-white border border-[#bec8c9] rounded-xl px-3 py-2 font-['Inter'] text-sm text-[#1c1b1b] outline-none"
           >
             <option value="">All Genres</option>
             {genres.map((g) => (
-              <option key={g.id} value={g.name}>
+              <option key={g.id} value={g.id}>
                 {g.name}
               </option>
             ))}
@@ -146,12 +162,18 @@ export function ExplorePage() {
       <section className="w-full flex flex-col gap-6">
         <div className="flex items-center gap-2">
           <MessagesSquare className="w-[21px] h-[21px] text-[#00464a]" />
-          <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">Trending Reviews</h2>
+          <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">
+            {selectedGenreName ? `Reviews tagged "${selectedGenreName}"` : 'Trending Reviews'}
+          </h2>
         </div>
         <div className="flex flex-col sm:flex-row gap-6 w-full">
-          {reviews === null && <p className="font-['Inter'] text-[#3f4949]">Loading…</p>}
-          {reviews?.length === 0 && <p className="font-['Inter'] text-[#3f4949]">No reviews yet.</p>}
-          {reviews?.map((review) => (
+          {displayedReviews === null && <p className="font-['Inter'] text-[#3f4949]">Loading…</p>}
+          {displayedReviews?.length === 0 && (
+            <p className="font-['Inter'] text-[#3f4949]">
+              {selectedGenreName ? `No reviews tagged "${selectedGenreName}" yet.` : 'No reviews yet.'}
+            </p>
+          )}
+          {displayedReviews?.map((review) => (
             <ReviewSnippetCard key={review.id} review={review} />
           ))}
         </div>

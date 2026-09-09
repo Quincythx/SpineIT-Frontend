@@ -63,11 +63,6 @@ export function BookDetailPage() {
           </div>
 
           <div className="sm:col-span-8 flex flex-col gap-4 text-center sm:text-left items-center sm:items-start">
-            {book.genre && (
-              <span className="bg-[rgba(126,87,0,0.1)] border border-[rgba(126,87,0,0.2)] text-[#7e5700] text-xs font-medium px-3 py-1 rounded-xl w-fit">
-                {book.genre}
-              </span>
-            )}
             <h1 className="font-['Playfair_Display'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-[#1c1b1b] tracking-[-0.96px]">
               {book.title}
             </h1>

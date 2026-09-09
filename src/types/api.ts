@@ -22,12 +22,13 @@ export interface Genre {
 // Minimal book shape nested inside reviews / favorites / reading list items.
 // Books have no cover image of their own -- SpineIT is a review platform,
 // not a library, so any photo belongs to a specific review, not the book.
+// Books also have no genre of their own -- genre is a per-review tag (each
+// reviewer picks the genre their own take fits), not a fixed book property.
 export interface BookRef {
   id: number;
   slug: string;
   title: string;
   author: string;
-  genre: string | null;
 }
 
 // Full Book model matching reviews.Book, including aggregate stats
@@ -41,7 +42,6 @@ export interface Book extends BookRef {
 export interface CreateBookInput {
   title: string;
   author: string;
-  genre_id?: number | null;
 }
 
 // Review model matching reviews.Review serializer
@@ -49,6 +49,7 @@ export interface Review {
   id: number;
   user: string;           // Username of reviewer
   book: BookRef;
+  genre: string | null;   // The genre tag this reviewer picked for their take
   review_text: string;
   rating: number;         // 1 to 5 stars
   image: string | null;   // The reviewer's own photo -- a book cover, a
@@ -61,6 +62,7 @@ export interface Review {
 // Data payload for creating a new review against an existing book
 export interface CreateReviewInput {
   book_id: number;
+  genre_id?: number | null;
   review_text: string;
   rating: number;
   image?: File | null;
