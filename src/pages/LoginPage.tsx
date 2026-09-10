@@ -29,12 +29,12 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex items-stretch min-h-screen bg-[#fcf9f8]">
+    <div className="flex items-stretch min-h-screen bg-bg">
       <div className="hidden lg:block flex-1 relative overflow-hidden">
         <img src={loginBg} alt="" className="absolute inset-0 size-full object-cover" />
-        <div className="absolute inset-0 bg-[rgba(0,70,74,0.2)] mix-blend-multiply" />
-        <div className="absolute inset-0 flex items-end p-16 bg-gradient-to-t from-[rgba(0,70,74,0.8)] to-transparent">
-          <h2 className="font-['Playfair_Display'] font-bold text-5xl leading-[56px] text-white tracking-[-0.96px]">
+        <div className="absolute inset-0 bg-accent/20 mix-blend-multiply" />
+        <div className="absolute inset-0 flex items-end p-16 bg-gradient-to-t from-accent/80 to-transparent">
+          <h2 className="font-['Inter'] font-bold text-5xl leading-[56px] text-white tracking-[-0.96px]">
             Your Literary Sanctuary
             <br />
             Awaits
@@ -45,11 +45,11 @@ export function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-6 sm:p-16">
         <form onSubmit={handleSubmit} className="flex flex-col gap-8 sm:gap-12 items-center w-full max-w-[448px]">
           <div className="flex flex-col gap-1 items-center w-full">
-            <BookOpen className="w-11 h-8 text-[#00464a]" />
-            <h1 className="font-['Playfair_Display'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-[#00464a] tracking-[-0.96px] pt-2">
+            <BookOpen className="w-11 h-8 text-accent" />
+            <h1 className="font-['Inter'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-accent tracking-[-0.96px] pt-2">
               Welcome Back
             </h1>
-            <p className="font-['Inter'] text-lg text-[#3f4949]">Return to your digital reading nook.</p>
+            <p className="font-['Inter'] text-lg text-ink-muted">Return to your digital reading nook.</p>
           </div>
 
           {USE_MOCKS && (
@@ -64,11 +64,11 @@ export function LoginPage() {
 
           <div className="flex flex-col gap-6 items-start w-full">
             <div className="flex flex-col gap-1 items-start w-full">
-              <label htmlFor="email" className="font-['Inter'] font-medium text-xs text-[#3f4949]">
+              <label htmlFor="email" className="font-['Inter'] font-medium text-xs text-ink-muted">
                 Email Address
               </label>
-              <div className="flex items-center gap-2 border-b border-[#bec8c9] pb-[5px] w-full">
-                <Mail className="w-4 h-4 text-[#bec8c9]" />
+              <div className="flex items-center gap-2 border-b border-border-strong pb-[5px] w-full">
+                <Mail className="w-4 h-4 text-border-strong" />
                 <input
                   id="email"
                   type="email"
@@ -76,20 +76,20 @@ export function LoginPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="reader@spineit.com"
-                  className="flex-1 font-['Inter'] text-base text-[#1c1b1b] placeholder:text-[#bec8c9] outline-none bg-transparent"
+                  className="flex-1 font-['Inter'] text-base text-ink placeholder:text-border-strong outline-none bg-transparent"
                 />
               </div>
             </div>
 
             <div className="flex flex-col gap-1 items-start w-full">
               <div className="flex items-center justify-between w-full">
-                <label htmlFor="password" className="font-['Inter'] font-medium text-xs text-[#3f4949]">
+                <label htmlFor="password" className="font-['Inter'] font-medium text-xs text-ink-muted">
                   Password
                 </label>
-                <span className="font-['Inter'] font-medium text-xs text-[#00464a]">Forgot Password?</span>
+                <span className="font-['Inter'] font-medium text-xs text-accent">Forgot Password?</span>
               </div>
-              <div className="flex items-center gap-2 border-b border-[#bec8c9] pb-[5px] w-full">
-                <Lock className="w-4 h-4 text-[#bec8c9]" />
+              <div className="flex items-center gap-2 border-b border-border-strong pb-[5px] w-full">
+                <Lock className="w-4 h-4 text-border-strong" />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -97,13 +97,13 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="flex-1 font-['Inter'] text-base text-[#1c1b1b] placeholder:text-[#bec8c9] outline-none bg-transparent"
+                  className="flex-1 font-['Inter'] text-base text-ink placeholder:text-border-strong outline-none bg-transparent"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  className="text-[#bec8c9]"
+                  className="text-border-strong"
                 >
                   {showPassword ? <EyeOff className="w-[22px] h-[15px]" /> : <Eye className="w-[22px] h-[15px]" />}
                 </button>
@@ -113,15 +113,15 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 rounded bg-[#00464a] drop-shadow-[0px_4px_10px_rgba(0,96,100,0.05)] font-['Inter'] font-semibold text-sm text-center text-white tracking-[0.7px] disabled:opacity-60"
+              className="w-full py-3 rounded bg-accent drop-shadow-[0px_4px_10px_rgba(0,0,0,0.05)] font-['Inter'] font-semibold text-sm text-center text-white tracking-[0.7px] disabled:opacity-60"
             >
               {isSubmitting ? 'Signing In…' : 'Sign In'}
             </button>
           </div>
 
-          <div className="w-full border-t border-[#e5e2e1] pt-6 text-center">
-            <span className="font-['Inter'] text-base text-[#3f4949]">New here? </span>
-            <Link to="/signup" className="font-['Inter'] text-base text-[#7e5700] underline decoration-[rgba(126,87,0,0.3)]">
+          <div className="w-full border-t border-border pt-6 text-center">
+            <span className="font-['Inter'] text-base text-ink-muted">New here? </span>
+            <Link to="/signup" className="font-['Inter'] text-base text-accent underline decoration-accent/30">
               Create an account
             </Link>
           </div>

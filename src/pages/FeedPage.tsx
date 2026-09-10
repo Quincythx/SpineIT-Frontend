@@ -58,7 +58,7 @@ export function FeedPage() {
             type="button"
             onClick={() => setTab('public')}
             className={`font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-5 py-2.5 ${
-              tab === 'public' ? 'bg-[#00464a] text-white' : 'text-[#3f4949]'
+              tab === 'public' ? 'bg-accent text-white' : 'text-ink-muted'
             }`}
           >
             Discover
@@ -67,7 +67,7 @@ export function FeedPage() {
             type="button"
             onClick={() => setTab('following')}
             className={`font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-5 py-2.5 ${
-              tab === 'following' ? 'bg-[#00464a] text-white' : 'text-[#3f4949]'
+              tab === 'following' ? 'bg-accent text-white' : 'text-ink-muted'
             }`}
           >
             Following
@@ -81,21 +81,21 @@ export function FeedPage() {
             <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-4 py-3">{error}</p>
           )}
           {!error && reviews === null && (
-            <p className="font-['Inter'] text-[#3f4949]">Loading the feed…</p>
+            <p className="font-['Inter'] text-ink-muted">Loading the feed…</p>
           )}
           {tab === 'public' && reviews !== null && reviews.length === 0 && (
-            <p className="font-['Inter'] text-[#3f4949]">
+            <p className="font-['Inter'] text-ink-muted">
               No reviews yet — be the first to{' '}
-              <Link to="/write" className="text-[#00464a] underline">
+              <Link to="/write" className="text-accent underline">
                 write one
               </Link>
               .
             </p>
           )}
           {tab === 'following' && reviews !== null && reviews.length === 0 && (
-            <p className="font-['Inter'] text-[#3f4949]">
+            <p className="font-['Inter'] text-ink-muted">
               No reviews from readers you follow yet — visit a{' '}
-              <Link to="/" className="text-[#00464a] underline" onClick={() => setTab('public')}>
+              <Link to="/" className="text-accent underline" onClick={() => setTab('public')}>
                 book or review
               </Link>{' '}
               to find people to follow.
@@ -109,7 +109,7 @@ export function FeedPage() {
               type="button"
               onClick={handleLoadMore}
               disabled={isLoadingMore}
-              className="self-center font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#00464a] border-2 border-[#00464a] rounded-xl px-6 py-3 disabled:opacity-60"
+              className="self-center font-['Inter'] font-semibold text-sm tracking-[0.7px] text-accent border-2 border-accent rounded-xl px-6 py-3 disabled:opacity-60"
             >
               {isLoadingMore ? 'Loading…' : 'Load More'}
             </button>
@@ -124,7 +124,7 @@ export function FeedPage() {
       <Link
         to="/write"
         aria-label="Write a new review"
-        className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 bg-[#00464a] rounded-xl size-14 flex items-center justify-center shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]"
+        className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 bg-accent rounded-xl size-14 flex items-center justify-center shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]"
       >
         <PenLine className="w-[18px] h-[18px] text-white" />
       </Link>

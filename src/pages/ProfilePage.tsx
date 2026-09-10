@@ -28,45 +28,45 @@ export function ProfilePage() {
     return (
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-16 py-12 lg:py-20 flex flex-col items-center gap-12 lg:gap-20">
         <div className="flex flex-col items-center gap-3 max-w-[512px]">
-          <div className="w-24 h-24 rounded-xl bg-[#eae7e7] border-2 border-[#bec8c9] flex items-center justify-center mb-2">
-            <UserIcon className="w-8 h-8 text-[#3f4949]" />
+          <div className="w-24 h-24 rounded-xl bg-border border-2 border-border-strong flex items-center justify-center mb-2">
+            <UserIcon className="w-8 h-8 text-ink-muted" />
           </div>
-          <h1 className="font-['Playfair_Display'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-[#00464a] text-center tracking-[-0.96px]">
+          <h1 className="font-['Inter'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-accent text-center tracking-[-0.96px]">
             Join the Community
           </h1>
-          <p className="font-['Inter'] text-base text-[#3f4949] text-center">
+          <p className="font-['Inter'] text-base text-ink-muted text-center">
             Discover your next great read, share what you think, and connect with fellow readers in our digital
             reading nook.
           </p>
         </div>
 
-        <div className="relative w-full rounded-lg border border-[#bec8c9] shadow-[0px_4px_20px_0px_rgba(0,96,100,0.05)] overflow-hidden bg-[#f0eded]">
+        <div className="relative w-full rounded-lg border border-border-strong shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] overflow-hidden bg-[#f0eded]">
           <div className="hidden sm:grid blur-[6px] opacity-40 p-6 lg:p-12 grid-cols-3 gap-6" aria-hidden>
-            <div className="col-span-1 bg-white border border-[#bec8c9]/50 rounded p-6 flex flex-col gap-4">
-              <p className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#3f4949] uppercase">
+            <div className="col-span-1 bg-white border border-border-strong/50 rounded p-6 flex flex-col gap-4">
+              <p className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-ink-muted uppercase">
                 Review Stats
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="font-['Playfair_Display'] font-semibold text-2xl text-[#00464a]">38</p>
-                  <p className="font-['Inter'] text-sm text-[#3f4949]">Reviews Written</p>
+                  <p className="font-['Inter'] font-semibold text-2xl text-accent">38</p>
+                  <p className="font-['Inter'] text-sm text-ink-muted">Reviews Written</p>
                 </div>
                 <div>
-                  <p className="font-['Playfair_Display'] font-semibold text-2xl text-[#00464a]">142</p>
-                  <p className="font-['Inter'] text-sm text-[#3f4949]">Likes Received</p>
+                  <p className="font-['Inter'] font-semibold text-2xl text-accent">142</p>
+                  <p className="font-['Inter'] text-sm text-ink-muted">Likes Received</p>
                 </div>
               </div>
             </div>
-            <div className="col-span-2 bg-white border border-[#bec8c9]/50 rounded p-6 flex gap-6 items-center">
-              <div className="w-24 h-36 bg-[#e5e2e1] rounded-sm shrink-0" />
+            <div className="col-span-2 bg-white border border-border-strong/50 rounded p-6 flex gap-6 items-center">
+              <div className="w-24 h-36 bg-border rounded-sm shrink-0" />
               <div className="flex flex-col gap-2 w-full">
-                <p className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-[#7e5700] uppercase">
+                <p className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-accent uppercase">
                   Latest Review
                 </p>
-                <p className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">
+                <p className="font-['Inter'] font-semibold text-2xl text-ink">
                   The Echo of Old Pages
                 </p>
-                <p className="font-['Inter'] text-sm text-[#3f4949]">
+                <p className="font-['Inter'] text-sm text-ink-muted">
                   "A quietly devastating meditation on memory..."
                 </p>
               </div>
@@ -74,26 +74,26 @@ export function ProfilePage() {
           </div>
 
           <div className="sm:absolute inset-0 flex items-center justify-center p-4 py-12">
-            <div className="bg-white sm:bg-white/95 backdrop-blur border border-[#bec8c9] rounded-lg shadow-[0px_4px_20px_0px_rgba(0,96,100,0.05)] max-w-[512px] w-full p-6 sm:p-12 flex flex-col items-center gap-3">
+            <div className="bg-white sm:bg-white/95 backdrop-blur border border-border-strong rounded-lg shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] max-w-[512px] w-full p-6 sm:p-12 flex flex-col items-center gap-3">
               <div className="w-16 h-16 rounded-xl bg-[#ffdbcc] flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-[#6e2a00]" />
               </div>
-              <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#00464a] text-center pt-2">
+              <h2 className="font-['Inter'] font-semibold text-2xl text-accent text-center pt-2">
                 Join the Conversation
               </h2>
-              <p className="font-['Inter'] text-base text-[#3f4949] text-center">
+              <p className="font-['Inter'] text-base text-ink-muted text-center">
                 Create a profile to share your reviews, build a following, and connect with fellow readers.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 pt-4 w-full sm:w-auto">
                 <Link
                   to="/signup"
-                  className="bg-[#00464a] text-white font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-12 py-3 text-center"
+                  className="bg-accent text-white font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-12 py-3 text-center"
                 >
                   Sign Up
                 </Link>
                 <Link
                   to="/login"
-                  className="border-2 border-[#00464a] text-[#00464a] font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-12 py-3 text-center"
+                  className="border-2 border-accent text-accent font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-12 py-3 text-center"
                 >
                   Log In
                 </Link>
@@ -128,7 +128,7 @@ export function ProfilePage() {
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-16 py-8 lg:py-12">
       <div className="flex flex-col items-center pb-8 lg:pb-12">
         <Avatar name={user.username} src={user.avatar} size={120} />
-        <h1 className="font-['Playfair_Display'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-[#1c1b1b] pt-2 text-center">
+        <h1 className="font-['Inter'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-ink pt-2 text-center">
           {user.username}
         </h1>
 
@@ -138,13 +138,13 @@ export function ProfilePage() {
               value={bioDraft}
               onChange={(e) => setBioDraft(e.target.value)}
               rows={3}
-              className="w-full border border-[#e5e2e1] rounded p-3 font-['Inter'] text-base text-[#3f4949] outline-none focus:border-[#00464a]"
+              className="w-full border border-border rounded p-3 font-['Inter'] text-base text-ink-muted outline-none focus:border-accent"
             />
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={handleSaveBio}
-                className="bg-[#00464a] text-white text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-2"
+                className="bg-accent text-white text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-2"
               >
                 Save
               </button>
@@ -154,25 +154,25 @@ export function ProfilePage() {
                   setBioDraft(user.bio ?? '');
                   setIsEditingBio(false);
                 }}
-                className="border border-[#00464a] text-[#00464a] text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-2"
+                className="border border-accent text-accent text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-2"
               >
                 Cancel
               </button>
             </div>
           </div>
         ) : (
-          <p className="font-['Inter'] text-lg text-[#3f4949] text-center max-w-[672px] pt-2">
+          <p className="font-['Inter'] text-lg text-ink-muted text-center max-w-[672px] pt-2">
             {user.bio || 'No bio yet.'}
           </p>
         )}
 
         {!isEditingBio && (
           <div className="flex gap-6 pt-3">
-            <span className="font-['Inter'] text-sm text-[#3f4949]">
-              <strong className="text-[#1c1b1b]">{followerCount}</strong> Followers
+            <span className="font-['Inter'] text-sm text-ink-muted">
+              <strong className="text-ink">{followerCount}</strong> Followers
             </span>
-            <span className="font-['Inter'] text-sm text-[#3f4949]">
-              <strong className="text-[#1c1b1b]">{followingCount}</strong> Following
+            <span className="font-['Inter'] text-sm text-ink-muted">
+              <strong className="text-ink">{followingCount}</strong> Following
             </span>
           </div>
         )}
@@ -182,21 +182,21 @@ export function ProfilePage() {
             <button
               type="button"
               onClick={() => setIsEditingBio(true)}
-              className="bg-[#00464a] text-white text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-3"
+              className="bg-accent text-white text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-3"
             >
               Edit Profile
             </button>
             <button
               type="button"
               onClick={handleShare}
-              className="border border-[#00464a] text-[#00464a] text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-3"
+              className="border border-accent text-accent text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-3"
             >
               {shareStatus === 'copied' ? 'Link Copied!' : 'Share'}
             </button>
             <button
               type="button"
               onClick={handleLogout}
-              className="text-[#3f4949] text-sm font-semibold tracking-[0.7px] px-6 py-3 underline"
+              className="text-ink-muted text-sm font-semibold tracking-[0.7px] px-6 py-3 underline"
             >
               Log Out
             </button>
@@ -205,29 +205,29 @@ export function ProfilePage() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-center pb-12 lg:pb-20">
-        <div className="bg-white drop-shadow-[0px_4px_10px_rgba(0,96,100,0.05)] rounded-lg flex-1 flex flex-col items-center justify-center p-6">
-          <p className="font-['Playfair_Display'] font-bold text-[32px] text-[#00464a]">{reviews?.length ?? '—'}</p>
-          <p className="font-['Inter'] font-semibold text-sm tracking-[1.4px] uppercase text-[#3f4949]">
+        <div className="bg-white drop-shadow-[0px_4px_10px_rgba(0,0,0,0.05)] rounded-lg flex-1 flex flex-col items-center justify-center p-6">
+          <p className="font-['Inter'] font-bold text-[32px] text-accent">{reviews?.length ?? '—'}</p>
+          <p className="font-['Inter'] font-semibold text-sm tracking-[1.4px] uppercase text-ink-muted">
             Reviews Shared
           </p>
         </div>
-        <div className="bg-white drop-shadow-[0px_4px_10px_rgba(0,96,100,0.05)] rounded-lg flex-1 flex flex-col items-center justify-center p-6">
-          <p className="font-['Playfair_Display'] font-bold text-[32px] text-[#00464a]">{reviewedBookCount ?? '—'}</p>
-          <p className="font-['Inter'] font-semibold text-sm tracking-[1.4px] uppercase text-[#3f4949]">
+        <div className="bg-white drop-shadow-[0px_4px_10px_rgba(0,0,0,0.05)] rounded-lg flex-1 flex flex-col items-center justify-center p-6">
+          <p className="font-['Inter'] font-bold text-[32px] text-accent">{reviewedBookCount ?? '—'}</p>
+          <p className="font-['Inter'] font-semibold text-sm tracking-[1.4px] uppercase text-ink-muted">
             Books Reviewed
           </p>
         </div>
       </div>
 
       <div className="max-w-[768px] mx-auto flex flex-col gap-8 lg:gap-12">
-        <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b] border-b border-[#e5e2e1] pb-[17px]">
+        <h2 className="font-['Inter'] font-semibold text-2xl text-ink border-b border-border pb-[17px]">
           My Sanctuary
         </h2>
-          {reviews === null && <p className="font-['Inter'] text-[#3f4949]">Loading…</p>}
+          {reviews === null && <p className="font-['Inter'] text-ink-muted">Loading…</p>}
           {reviews?.length === 0 && (
-            <p className="font-['Inter'] text-[#3f4949]">
+            <p className="font-['Inter'] text-ink-muted">
               You haven't written any reviews yet —{' '}
-              <Link to="/write" className="text-[#00464a] underline">
+              <Link to="/write" className="text-accent underline">
                 write your first one
               </Link>
               .

@@ -23,7 +23,7 @@ export function FollowButton({ username }: { username: string }) {
     return (
       <Link
         to="/login"
-        className="border-2 border-[#00464a] text-[#00464a] font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-6 py-3"
+        className="border-2 border-accent text-accent font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-6 py-3"
       >
         Log in to Follow
       </Link>
@@ -48,7 +48,7 @@ export function FollowButton({ username }: { username: string }) {
       onClick={handleClick}
       disabled={isLoading}
       className={`font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-6 py-3 disabled:opacity-60 ${
-        isFollowing ? 'border-2 border-[#00464a] text-[#00464a]' : 'bg-[#00464a] text-white'
+        isFollowing ? 'border-2 border-accent text-accent' : 'bg-accent text-white'
       }`}
     >
       {isFollowing ? 'Following' : 'Follow'}

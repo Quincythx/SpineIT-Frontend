@@ -1,4 +1,4 @@
-const PALETTE = ['#00464a', '#7e5700', '#6a4800', '#3f4949', '#854d0e'];
+const PALETTE = ['#8C1D40', '#0F1419', '#6E1732', '#536471', '#3D1024'];
 
 function colorFor(name: string): string {
   let hash = 0;

@@ -74,10 +74,10 @@ export function ExplorePage() {
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-16 py-8 lg:py-12 flex flex-col items-center gap-12 lg:gap-20">
       {!user && (
         <div className="flex flex-col items-center gap-6 text-center max-w-[672px] pt-4 lg:pt-8">
-          <h1 className="font-['Playfair_Display'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-[#00464a] tracking-[-0.96px]">
+          <h1 className="font-['Inter'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-accent tracking-[-0.96px]">
             Discover Your Next Obsession
           </h1>
-          <p className="font-['Inter'] text-lg text-[#3f4949]">
+          <p className="font-['Inter'] text-lg text-ink-muted">
             Search millions of books, authors, and community reviews in our digital sanctuary.
           </p>
         </div>
@@ -85,13 +85,13 @@ export function ExplorePage() {
 
       <div className="w-full max-w-[672px] flex flex-col gap-3">
         <div className="relative w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#6b7280]" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-ink-muted" />
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search books, authors, or topics..."
-            className="w-full bg-[#f6f3f2] border border-[#bec8c9] border-b-2 rounded-t pl-[49px] pr-4 pt-[15px] pb-4 font-['Inter'] text-base text-[#1c1b1b] placeholder:text-[#6b7280] outline-none"
+            className="w-full bg-bg-hover border border-border-strong border-b-2 rounded-t pl-[49px] pr-4 pt-[15px] pb-4 font-['Inter'] text-base text-ink placeholder:text-ink-muted outline-none"
           />
         </div>
 
@@ -99,7 +99,7 @@ export function ExplorePage() {
           <select
             value={selectedGenreId ?? ''}
             onChange={(e) => setSelectedGenreId(e.target.value ? Number(e.target.value) : null)}
-            className="bg-white border border-[#bec8c9] rounded-xl px-3 py-2 font-['Inter'] text-sm text-[#1c1b1b] outline-none"
+            className="bg-white border border-border-strong rounded-xl px-3 py-2 font-['Inter'] text-sm text-ink outline-none"
           >
             <option value="">All Genres</option>
             {genres.map((g) => (
@@ -112,7 +112,7 @@ export function ExplorePage() {
           <select
             value={minRating}
             onChange={(e) => setMinRating(Number(e.target.value))}
-            className="bg-white border border-[#bec8c9] rounded-xl px-3 py-2 font-['Inter'] text-sm text-[#1c1b1b] outline-none"
+            className="bg-white border border-border-strong rounded-xl px-3 py-2 font-['Inter'] text-sm text-ink outline-none"
           >
             {RATING_OPTIONS.map((r) => (
               <option key={r} value={r}>
@@ -124,7 +124,7 @@ export function ExplorePage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="bg-white border border-[#bec8c9] rounded-xl px-3 py-2 font-['Inter'] text-sm text-[#1c1b1b] outline-none"
+            className="bg-white border border-border-strong rounded-xl px-3 py-2 font-['Inter'] text-sm text-ink outline-none"
           >
             {SORT_OPTIONS.map((s) => (
               <option key={s.value} value={s.value}>
@@ -137,22 +137,22 @@ export function ExplorePage() {
 
       <section className="w-full flex flex-col gap-6">
         <div className="flex items-center gap-2">
-          <Hash className="w-[21px] h-[21px] text-[#00464a]" />
-          <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">Trending Topics</h2>
+          <Hash className="w-[21px] h-[21px] text-accent" />
+          <h2 className="font-['Inter'] font-semibold text-2xl text-ink">Trending Topics</h2>
         </div>
         <TrendingTopics />
       </section>
 
       <section className="w-full flex flex-col gap-6">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-[21px] h-[21px] text-[#00464a]" />
-          <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">
+          <Sparkles className="w-[21px] h-[21px] text-accent" />
+          <h2 className="font-['Inter'] font-semibold text-2xl text-ink">
             {isFiltered ? 'Search Results' : 'Your Next Read'}
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-          {books === undefined && <p className="font-['Inter'] text-[#3f4949]">Loading…</p>}
-          {books?.length === 0 && <p className="font-['Inter'] text-[#3f4949]">No books match those filters.</p>}
+          {books === undefined && <p className="font-['Inter'] text-ink-muted">Loading…</p>}
+          {books?.length === 0 && <p className="font-['Inter'] text-ink-muted">No books match those filters.</p>}
           {books?.map((book) => (
             <BookMiniCard key={book.id} book={book} />
           ))}
@@ -161,15 +161,15 @@ export function ExplorePage() {
 
       <section className="w-full flex flex-col gap-6">
         <div className="flex items-center gap-2">
-          <MessagesSquare className="w-[21px] h-[21px] text-[#00464a]" />
-          <h2 className="font-['Playfair_Display'] font-semibold text-2xl text-[#1c1b1b]">
+          <MessagesSquare className="w-[21px] h-[21px] text-accent" />
+          <h2 className="font-['Inter'] font-semibold text-2xl text-ink">
             {selectedGenreName ? `Reviews tagged "${selectedGenreName}"` : 'Trending Reviews'}
           </h2>
         </div>
         <div className="flex flex-col sm:flex-row gap-6 w-full">
-          {displayedReviews === null && <p className="font-['Inter'] text-[#3f4949]">Loading…</p>}
+          {displayedReviews === null && <p className="font-['Inter'] text-ink-muted">Loading…</p>}
           {displayedReviews?.length === 0 && (
-            <p className="font-['Inter'] text-[#3f4949]">
+            <p className="font-['Inter'] text-ink-muted">
               {selectedGenreName ? `No reviews tagged "${selectedGenreName}" yet.` : 'No reviews yet.'}
             </p>
           )}
