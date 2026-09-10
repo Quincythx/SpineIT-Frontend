@@ -1,16 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageCircle, Bookmark, BookOpen } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Share2, BookOpen } from 'lucide-react';
 import type { Review } from '../types/api';
 import { Avatar } from './Avatar';
 import { UserLink } from './UserLink';
 import { formatRelativeTime } from '../utils/formatRelativeTime';
 import { api } from '../services/api';
 
+const TEXT_CLAMP_LENGTH = 320;
+
 export function ReviewCard({ review }: { review: Review }) {
   const [likeCount, setLikeCount] = useState(review.like_count);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
 
   const handleLike = async () => {
     if (liked) return;
@@ -34,80 +38,100 @@ export function ReviewCard({ review }: { review: Review }) {
     }
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await navigator.clipboard.writeText(`${window.location.origin}/reviews/${review.id}`);
+    setShareStatus('copied');
+    setTimeout(() => setShareStatus('idle'), 2000);
+  };
+
+  const isLong = review.review_text.length > TEXT_CLAMP_LENGTH;
+  const shownText = isLong && !expanded ? `${review.review_text.slice(0, TEXT_CLAMP_LENGTH)}…` : review.review_text;
+
   return (
-    <article className="bg-white rounded-lg shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] overflow-hidden w-full">
-      <div className="flex items-center justify-between px-4 sm:px-6 pt-3 pb-[13px] border-b border-border">
-        <UserLink username={review.user} className="flex items-center gap-3">
-          <Avatar name={review.user} size={40} />
-          <div>
-            <p className="font-['Inter'] font-semibold text-sm text-ink">{review.user}</p>
-            <p className="font-['Inter'] text-xs text-ink-muted">{formatRelativeTime(review.created_at)}</p>
-          </div>
-        </UserLink>
-      </div>
+    <article className="border-b border-border px-4 py-3 flex gap-3 w-full">
+      <UserLink username={review.user} className="shrink-0">
+        <Avatar name={review.user} size={40} />
+      </UserLink>
 
-      <Link
-        to={`/books/${review.book.slug}`}
-        className="bg-bg-hover flex items-center justify-center px-4 sm:px-6 py-6 sm:py-9"
-      >
-        {review.image ? (
-          <img
-            src={review.image}
-            alt={review.book.title}
-            className="aspect-[2/3] h-[220px] sm:h-[280px] object-cover rounded-r-sm shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]"
-          />
-        ) : (
-          <div className="aspect-[2/3] h-[220px] sm:h-[280px] bg-border rounded-r-sm shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] flex items-center justify-center">
-            <BookOpen className="w-8 h-8 text-ink-muted" />
-          </div>
-        )}
-      </Link>
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <div className="flex items-baseline gap-1.5 flex-wrap">
+          <UserLink username={review.user} className="font-['Inter'] font-bold text-[15px] text-ink hover:underline">
+            {review.user}
+          </UserLink>
+          <span className="text-ink-muted">·</span>
+          <span className="font-['Inter'] text-sm text-ink-muted">{formatRelativeTime(review.created_at)}</span>
+        </div>
 
-      <div className="flex flex-col gap-1 pt-6 sm:pt-9 pr-4 sm:pr-6 pb-6 pl-3">
-        <Link to={`/books/${review.book.slug}`}>
-          <h2 className="font-['Inter'] font-bold text-2xl sm:text-[32px] leading-8 sm:leading-[40px] text-ink">
-            {review.book.title}
-          </h2>
+        <Link to={`/books/${review.book.slug}`} className="flex items-center gap-1.5 w-fit hover:underline">
+          <BookOpen className="w-3.5 h-3.5 text-ink-muted shrink-0" />
+          <span className="font-['Inter'] font-semibold text-sm text-ink">{review.book.title}</span>
+          <span className="font-['Inter'] text-sm text-ink-muted">by {review.book.author}</span>
         </Link>
-        <p className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-ink-muted">
-          by {review.book.author}
-        </p>
 
         {review.genre && (
-          <div className="flex gap-2 pt-2">
-            <span className="bg-accent-tint text-accent-hover text-xs font-medium px-3 py-1 rounded-md">
-              {review.genre}
-            </span>
-          </div>
+          <span className="bg-accent-tint text-accent-hover text-xs font-medium px-2.5 py-0.5 rounded-full w-fit mt-0.5">
+            {review.genre}
+          </span>
         )}
 
-        <p className="font-['Inter'] text-base text-ink leading-[26px] py-5 whitespace-pre-line">
-          {review.review_text}
-        </p>
-
-        <div className="flex items-center justify-between border-t border-border pt-[17px]">
-          <div className="flex gap-6 items-center">
+        <p className="font-['Inter'] text-[15px] text-ink leading-[22px] whitespace-pre-line mt-1">
+          {shownText}
+          {isLong && !expanded && (
             <button
               type="button"
-              onClick={handleLike}
-              className="flex items-center gap-2 text-ink-muted"
-              aria-pressed={liked}
+              onClick={() => setExpanded(true)}
+              className="text-accent font-semibold ml-1 hover:underline"
             >
-              <Heart className={`w-5 h-5 ${liked ? 'fill-accent text-accent' : ''}`} />
-              <span className="font-['Inter'] font-medium text-xs">{likeCount}</span>
+              Show more
             </button>
-            <Link to={`/reviews/${review.id}`} className="flex items-center gap-2 text-ink-muted">
-              <MessageCircle className="w-5 h-5" />
-            </Link>
-          </div>
+          )}
+        </p>
+
+        {review.image && (
+          <Link to={`/reviews/${review.id}`} className="mt-2 block">
+            <img
+              src={review.image}
+              alt={review.book.title}
+              className="w-full max-h-80 object-cover rounded-2xl border border-border"
+            />
+          </Link>
+        )}
+
+        <div className="flex items-center justify-between max-w-md mt-2 -ml-2">
+          <button
+            type="button"
+            onClick={handleLike}
+            className="flex items-center gap-2 text-ink-muted hover:text-accent px-2 py-1.5 rounded-full"
+            aria-pressed={liked}
+          >
+            <Heart className={`w-[18px] h-[18px] ${liked ? 'fill-accent text-accent' : ''}`} />
+            <span className="font-['Inter'] text-[13px]">{likeCount}</span>
+          </button>
+          <Link
+            to={`/reviews/${review.id}`}
+            className="flex items-center gap-2 text-ink-muted hover:text-accent px-2 py-1.5 rounded-full"
+          >
+            <MessageCircle className="w-[18px] h-[18px]" />
+            <span className="font-['Inter'] text-[13px]">{review.comment_count}</span>
+          </Link>
           <button
             type="button"
             onClick={handleSave}
             disabled={saved}
-            className="flex items-center gap-2 px-3 py-2 rounded font-['Inter'] font-semibold text-sm tracking-[0.7px] text-accent disabled:text-ink-muted"
+            className={`flex items-center px-2 py-1.5 rounded-full ${saved ? 'text-accent' : 'text-ink-muted hover:text-accent'}`}
+            aria-label={saved ? 'Saved' : 'Save'}
           >
-            <Bookmark className={`w-4 h-[18px] ${saved ? 'fill-current' : ''}`} />
-            {saved ? 'Saved' : 'Save'}
+            <Bookmark className={`w-[18px] h-[18px] ${saved ? 'fill-current' : ''}`} />
+          </button>
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex items-center gap-1.5 text-ink-muted hover:text-accent px-2 py-1.5 rounded-full"
+            aria-label="Copy link"
+          >
+            <Share2 className="w-[18px] h-[18px]" />
+            {shareStatus === 'copied' && <span className="font-['Inter'] text-[13px]">Copied</span>}
           </button>
         </div>
       </div>

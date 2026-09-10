@@ -6,7 +6,7 @@ export function Footer() {
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-16 flex gap-6 justify-center flex-wrap">
         <div className="flex-1 min-w-[200px] flex flex-col gap-3">
           <p className="font-['Inter'] font-bold text-2xl text-accent">SpineIt</p>
-          <p className="font-['Inter'] text-sm text-ink-muted">© 2024 SpineIt. Your Digital Reading Nook.</p>
+          <p className="font-['Inter'] text-sm text-ink-muted">© {new Date().getFullYear()} SpineIt. Where readers talk books.</p>
         </div>
         <div className="flex-1 min-w-[200px] flex flex-col gap-3">
           <p className="font-['Inter'] font-bold text-sm tracking-[0.7px] text-accent">Links</p>

@@ -233,6 +233,7 @@ const mockApiRaw = {
       rating: input.rating,
       image: input.image ? URL.createObjectURL(input.image) : null,
       like_count: 0,
+      comment_count: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -277,13 +278,19 @@ const mockApiRaw = {
     };
     mockComments.push(comment);
     const review = mockReviews.find((r) => r.id === reviewId);
-    if (review) notifyComment(review.user, user.username, reviewId);
+    if (review) {
+      review.comment_count += 1;
+      notifyComment(review.user, user.username, reviewId);
+    }
     return delay(comment);
   },
 
   deleteComment: async (id: number): Promise<void> => {
     const index = mockComments.findIndex((c) => c.id === id);
-    if (index !== -1) mockComments.splice(index, 1);
+    if (index === -1) return delay(undefined);
+    const [removed] = mockComments.splice(index, 1);
+    const review = mockReviews.find((r) => r.id === removed.review);
+    if (review) review.comment_count = Math.max(0, review.comment_count - 1);
     return delay(undefined);
   },
 

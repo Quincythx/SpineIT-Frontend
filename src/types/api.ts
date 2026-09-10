@@ -55,6 +55,7 @@ export interface Review {
   image: string | null;   // The reviewer's own photo -- a book cover, a
                            // dog-eared page, themselves reading it, anything
   like_count: number;
+  comment_count: number;
   created_at: string;
   updated_at: string;
 }
