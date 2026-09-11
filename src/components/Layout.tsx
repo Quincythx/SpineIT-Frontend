@@ -3,6 +3,7 @@ import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { Sidebar } from './Sidebar';
 import { BottomNav } from './BottomNav';
+import { MobileTopBar } from './MobileTopBar';
 import { useAuth } from '../context/AuthContext';
 
 export function Layout() {
@@ -13,6 +14,7 @@ export function Layout() {
       <div className="min-h-screen bg-bg flex">
         <Sidebar />
         <main className="flex-1 min-w-0 pb-16 lg:pb-0">
+          <MobileTopBar />
           <Outlet />
         </main>
         <BottomNav />

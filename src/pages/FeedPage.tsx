@@ -124,7 +124,7 @@ export function FeedPage() {
       <Link
         to="/write"
         aria-label="Write a new review"
-        className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 bg-accent rounded-xl size-14 flex items-center justify-center shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]"
+        className="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 bg-accent rounded-xl size-14 flex items-center justify-center shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] z-10"
       >
         <PenLine className="w-[18px] h-[18px] text-white" />
       </Link>

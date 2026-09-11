@@ -1,6 +1,5 @@
 import { Home, Compass, Bookmark, User } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import { NotificationBell } from './NotificationBell';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home', icon: Home, end: true },
@@ -23,9 +22,6 @@ export function BottomNav() {
           {({ isActive }) => <Icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />}
         </NavLink>
       ))}
-      <div className="flex items-center justify-center flex-1 py-3">
-        <NotificationBell panelClassName="right-2 bottom-full mb-2" />
-      </div>
     </nav>
   );
 }
