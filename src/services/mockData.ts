@@ -38,6 +38,7 @@ const SEED_BOOKS: Book[] = [
     author: 'Marcus Thorne',
     average_rating: 4.8,
     review_count: 1,
+    cover_image: null,
     created_at: daysAgo(40),
   },
   {
@@ -47,6 +48,7 @@ const SEED_BOOKS: Book[] = [
     author: 'Anya Volkov',
     average_rating: 4.2,
     review_count: 1,
+    cover_image: null,
     created_at: daysAgo(35),
   },
   {
@@ -56,6 +58,7 @@ const SEED_BOOKS: Book[] = [
     author: 'Carlos Ruiz Zafón',
     average_rating: 5,
     review_count: 1,
+    cover_image: null,
     created_at: daysAgo(60),
   },
   {
@@ -65,6 +68,7 @@ const SEED_BOOKS: Book[] = [
     author: 'Madeline Miller',
     average_rating: 4.5,
     review_count: 1,
+    cover_image: null,
     created_at: daysAgo(70),
   },
   {
@@ -74,6 +78,7 @@ const SEED_BOOKS: Book[] = [
     author: 'Erin Morgenstern',
     average_rating: 4.5,
     review_count: 0,
+    cover_image: null,
     created_at: daysAgo(90),
   },
   {
@@ -83,6 +88,7 @@ const SEED_BOOKS: Book[] = [
     author: 'Julian Barnes',
     average_rating: 4.5,
     review_count: 1,
+    cover_image: null,
     created_at: daysAgo(20),
   },
 ];

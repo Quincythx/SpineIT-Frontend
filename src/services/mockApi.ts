@@ -71,6 +71,13 @@ function recalcBookStats(bookId: number) {
   book.average_rating = reviewsForBook.length
     ? Math.round((reviewsForBook.reduce((sum, r) => sum + r.rating, 0) / reviewsForBook.length) * 10) / 10
     : null;
+
+  // Mirrors the backend: stand in with the most-liked review's photo,
+  // since a book has no cover of its own.
+  const withImage = reviewsForBook
+    .filter((r) => r.image)
+    .sort((a, b) => b.like_count - a.like_count || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  book.cover_image = withImage[0]?.image ?? null;
 }
 
 // Simulates what the real backend's signals do automatically on Like/Comment/
@@ -179,6 +186,7 @@ const mockApiRaw = {
       author: input.author,
       average_rating: null,
       review_count: 0,
+      cover_image: null,
       created_at: new Date().toISOString(),
     };
     mockBooks.push(book);
@@ -305,6 +313,7 @@ const mockApiRaw = {
     if (review) {
       review.like_count += 1;
       notifyLike(review.user, user.username, reviewId);
+      recalcBookStats(review.book.id);
     }
     return delay(like);
   },
@@ -314,7 +323,10 @@ const mockApiRaw = {
     if (index === -1) return delay(undefined);
     const [removed] = mockLikes.splice(index, 1);
     const review = mockReviews.find((r) => r.id === removed.review);
-    if (review) review.like_count = Math.max(0, review.like_count - 1);
+    if (review) {
+      review.like_count = Math.max(0, review.like_count - 1);
+      recalcBookStats(review.book.id);
+    }
     return delay(undefined);
   },
 

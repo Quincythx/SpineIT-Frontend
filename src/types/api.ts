@@ -35,6 +35,9 @@ export interface BookRef {
 export interface Book extends BookRef {
   average_rating: number | null;
   review_count: number;
+  // Not a real cover -- the most-liked review's photo, standing in for one.
+  // Null until at least one review of this book has a photo.
+  cover_image: string | null;
   created_at: string;
 }
 

@@ -57,8 +57,12 @@ export function BookDetailPage() {
       <div className="bg-white rounded-lg shadow-[0px_4px_20px_0px_rgba(0,0,0,0.05)] p-6 sm:p-12">
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 sm:gap-12">
           <div className="sm:col-span-4">
-            <div className="w-full max-w-[240px] sm:max-w-none mx-auto sm:mx-0 aspect-[2/3] bg-bg-hover rounded-r flex items-center justify-center">
-              <BookOpen className="w-10 h-10 text-ink-muted" />
+            <div className="w-full max-w-[240px] sm:max-w-none mx-auto sm:mx-0 aspect-[2/3] bg-bg-hover rounded-r flex items-center justify-center overflow-hidden">
+              {book.cover_image ? (
+                <img src={book.cover_image} alt={book.title} className="w-full h-full object-cover" />
+              ) : (
+                <BookOpen className="w-10 h-10 text-ink-muted" />
+              )}
             </div>
           </div>
 
