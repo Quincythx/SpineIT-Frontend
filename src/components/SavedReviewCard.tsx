@@ -40,7 +40,7 @@ export function SavedReviewCard({ review, onRemove }: { review: Review; onRemove
 
       <div className="flex items-center gap-3 border-t border-border pt-3">
         <UserLink username={review.user} className="flex items-center gap-2 flex-1 min-w-0">
-          <Avatar name={review.user} size={22} />
+          <Avatar name={review.user} src={review.user_avatar} size={22} />
           <span className="font-['Inter'] font-medium text-xs text-ink-muted">@{review.user}</span>
         </UserLink>
         <span className="flex items-center gap-1 text-ink-muted">

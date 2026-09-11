@@ -12,7 +12,7 @@ export function BookPageReviewEntry({ review }: { review: Review }) {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Avatar name={review.user} size={36} />
+          <Avatar name={review.user} src={review.user_avatar} size={36} />
           <div>
             <p className="font-['Inter'] font-bold text-sm text-ink">{review.user}</p>
             <p className="font-['Inter'] text-xs text-ink-muted">{formatRelativeTime(review.created_at)}</p>

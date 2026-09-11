@@ -51,7 +51,7 @@ export function ReviewCard({ review }: { review: Review }) {
   return (
     <article className="border-b border-border px-4 py-3 flex gap-3 w-full">
       <UserLink username={review.user} className="shrink-0">
-        <Avatar name={review.user} size={40} />
+        <Avatar name={review.user} src={review.user_avatar} size={40} />
       </UserLink>
 
       <div className="flex-1 min-w-0 flex flex-col gap-1">

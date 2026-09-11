@@ -255,6 +255,7 @@ const mockApiRaw = {
     const review: Review = {
       id: mockNextIds.review++,
       user: user.username,
+      user_avatar: user.avatar,
       book,
       genre: mockGenres.find((g) => g.id === input.genre_id)?.name ?? null,
       review_text: input.review_text,
@@ -301,6 +302,7 @@ const mockApiRaw = {
       id: mockNextIds.comment++,
       review: reviewId,
       user: user.username,
+      user_avatar: user.avatar,
       text,
       created_at: new Date().toISOString(),
     };

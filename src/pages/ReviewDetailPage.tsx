@@ -6,6 +6,7 @@ import type { Review, Comment } from '../types/api';
 import { useAuth } from '../context/AuthContext';
 import { CommentItem } from '../components/CommentItem';
 import { UserLink } from '../components/UserLink';
+import { Avatar } from '../components/Avatar';
 import { FollowButton } from '../components/FollowButton';
 
 export function ReviewDetailPage() {
@@ -110,9 +111,7 @@ export function ReviewDetailPage() {
         {review && (
           <div className="flex items-center justify-between">
             <UserLink username={review.user} className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-border flex items-center justify-center font-['Inter'] font-semibold text-ink-muted">
-                {review.user.charAt(0).toUpperCase()}
-              </div>
+              <Avatar name={review.user} src={review.user_avatar} size={48} />
               <div>
                 <p className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-ink">{review.user}</p>
                 <p className="font-['Inter'] text-sm text-ink-muted">Reviewer</p>
@@ -208,9 +207,7 @@ export function ReviewDetailPage() {
 
           {user ? (
             <form onSubmit={handlePostComment} className="bg-white drop-shadow-[0px_4px_10px_rgba(0,0,0,0.05)] rounded p-6 flex gap-3 items-start">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 font-['Inter'] font-semibold text-accent">
-                {user.username.charAt(0).toUpperCase()}
-              </div>
+              <Avatar name={user.username} src={user.avatar} size={40} />
               <div className="flex-1 flex flex-col gap-3">
                 <input
                   type="text"

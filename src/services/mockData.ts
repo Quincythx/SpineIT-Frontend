@@ -124,6 +124,7 @@ const SEED_REVIEWS: Review[] = [
   {
     id: 1,
     user: 'elena_rostova',
+    user_avatar: null,
     book: SEED_BOOKS[0],
     genre: 'Historical Fiction',
     review_text:
@@ -138,6 +139,7 @@ const SEED_REVIEWS: Review[] = [
   {
     id: 2,
     user: 'david_chen',
+    user_avatar: null,
     book: SEED_BOOKS[1],
     genre: 'Sci-Fi',
     review_text:
@@ -152,6 +154,7 @@ const SEED_REVIEWS: Review[] = [
   {
     id: 3,
     user: 'jane_reader',
+    user_avatar: null,
     book: SEED_BOOKS[2],
     genre: 'Literary',
     review_text:
@@ -166,6 +169,7 @@ const SEED_REVIEWS: Review[] = [
   {
     id: 4,
     user: 'jane_reader',
+    user_avatar: null,
     book: SEED_BOOKS[3],
     genre: 'Fantasy',
     review_text:
@@ -180,6 +184,7 @@ const SEED_REVIEWS: Review[] = [
   {
     id: 5,
     user: 'elena_rostova',
+    user_avatar: null,
     book: SEED_BOOKS[5],
     genre: 'Historical Fiction',
     review_text:
@@ -198,6 +203,7 @@ const SEED_COMMENTS: Comment[] = [
     id: 1,
     review: 5,
     user: 'Marcus T.',
+    user_avatar: null,
     text: "Spot on review, Elena. I entirely agree about the pacing in the middle third. I almost put it down, but that ending... it really does stick with you.",
     created_at: hoursAgo(1),
   },
@@ -205,6 +211,7 @@ const SEED_COMMENTS: Comment[] = [
     id: 2,
     review: 5,
     user: 'elena_rostova',
+    user_avatar: null,
     text: 'Glad you powered through it, Marcus! The payoff is definitely worth the slight slog.',
     created_at: hoursAgo(0.75),
   },
@@ -212,6 +219,7 @@ const SEED_COMMENTS: Comment[] = [
     id: 3,
     review: 5,
     user: 'Sarah J.',
+    user_avatar: null,
     text: "I loved \"The Sense of an Ending,\" so based on your recommendation I'm definitely picking this up next! That quote you pulled is beautiful.",
     created_at: hoursAgo(3),
   },

@@ -51,6 +51,7 @@ export interface CreateBookInput {
 export interface Review {
   id: number;
   user: string;           // Username of reviewer
+  user_avatar: string | null;
   book: BookRef;
   genre: string | null;   // The genre tag this reviewer picked for their take
   review_text: string;
@@ -77,6 +78,7 @@ export interface Comment {
   id: number;
   review: number;         // Review ID
   user: string;           // Username of commenter
+  user_avatar: string | null;
   text: string;
   created_at: string;
 }

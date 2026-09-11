@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 const PALETTE = ['#8C1D40', '#0F1419', '#6E1732', '#536471', '#3D1024'];
 
 function colorFor(name: string): string {
@@ -15,11 +17,14 @@ export function Avatar({
   src?: string | null;
   size?: number;
 }) {
-  if (src) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  if (src && !imageFailed) {
     return (
       <img
         src={src}
         alt={name}
+        onError={() => setImageFailed(true)}
         className="rounded-xl object-cover shrink-0"
         style={{ width: size, height: size }}
       />

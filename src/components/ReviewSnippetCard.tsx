@@ -10,7 +10,7 @@ export function ReviewSnippetCard({ review }: { review: Review }) {
       className="bg-white border border-border rounded-xl px-5 py-4 flex flex-col gap-3 flex-1 min-w-0"
     >
       <div className="flex items-center gap-3">
-        <Avatar name={review.user} size={36} />
+        <Avatar name={review.user} src={review.user_avatar} size={36} />
         <div>
           <p className="font-['Inter'] font-bold text-sm text-ink">{review.user}</p>
           <p className="font-['Inter'] text-xs text-ink-muted">
