@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Search, Hash, Sparkles, MessagesSquare } from 'lucide-react';
+import { Search, Sparkles, MessagesSquare } from 'lucide-react';
 import { api } from '../services/api';
 import type { Book, Review, Genre } from '../types/api';
 import { useAuth } from '../context/AuthContext';
-import { TrendingTopics } from '../components/TrendingTopics';
 import { BookMiniCard } from '../components/BookMiniCard';
 import { ReviewSnippetCard } from '../components/ReviewSnippetCard';
 
@@ -134,14 +133,6 @@ export function ExplorePage() {
           </select>
         </div>
       </div>
-
-      <section className="w-full flex flex-col gap-6">
-        <div className="flex items-center gap-2">
-          <Hash className="w-[21px] h-[21px] text-accent" />
-          <h2 className="font-['Inter'] font-semibold text-2xl text-ink">Trending Topics</h2>
-        </div>
-        <TrendingTopics />
-      </section>
 
       <section className="w-full flex flex-col gap-6">
         <div className="flex items-center gap-2">

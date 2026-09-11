@@ -5,7 +5,6 @@ import { api } from '../services/api';
 import type { Review } from '../types/api';
 import { useAuth } from '../context/AuthContext';
 import { ReviewCard } from '../components/ReviewCard';
-import { TrendingDiscussions } from '../components/TrendingDiscussions';
 
 type FeedTab = 'public' | 'following';
 
@@ -75,50 +74,44 @@ export function FeedPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2 flex flex-col gap-8 lg:gap-12">
-          {error && (
-            <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-4 py-3">{error}</p>
-          )}
-          {!error && reviews === null && (
-            <p className="font-['Inter'] text-ink-muted">Loading the feed…</p>
-          )}
-          {tab === 'public' && reviews !== null && reviews.length === 0 && (
-            <p className="font-['Inter'] text-ink-muted">
-              No reviews yet — be the first to{' '}
-              <Link to="/write" className="text-accent underline">
-                write one
-              </Link>
-              .
-            </p>
-          )}
-          {tab === 'following' && reviews !== null && reviews.length === 0 && (
-            <p className="font-['Inter'] text-ink-muted">
-              No reviews from readers you follow yet — visit a{' '}
-              <Link to="/" className="text-accent underline" onClick={() => setTab('public')}>
-                book or review
-              </Link>{' '}
-              to find people to follow.
-            </p>
-          )}
-          {reviews?.map((review) => (
-            <ReviewCard key={review.id} review={review} />
-          ))}
-          {nextCursorUrl && (
-            <button
-              type="button"
-              onClick={handleLoadMore}
-              disabled={isLoadingMore}
-              className="self-center font-['Inter'] font-semibold text-sm tracking-[0.7px] text-accent border-2 border-accent rounded-xl px-6 py-3 disabled:opacity-60"
-            >
-              {isLoadingMore ? 'Loading…' : 'Load More'}
-            </button>
-          )}
-        </div>
-
-        <div className="lg:col-span-1">
-          <TrendingDiscussions />
-        </div>
+      <div className="max-w-[680px] mx-auto flex flex-col gap-8 lg:gap-12">
+        {error && (
+          <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded px-4 py-3">{error}</p>
+        )}
+        {!error && reviews === null && (
+          <p className="font-['Inter'] text-ink-muted">Loading the feed…</p>
+        )}
+        {tab === 'public' && reviews !== null && reviews.length === 0 && (
+          <p className="font-['Inter'] text-ink-muted">
+            No reviews yet — be the first to{' '}
+            <Link to="/write" className="text-accent underline">
+              write one
+            </Link>
+            .
+          </p>
+        )}
+        {tab === 'following' && reviews !== null && reviews.length === 0 && (
+          <p className="font-['Inter'] text-ink-muted">
+            No reviews from readers you follow yet — visit a{' '}
+            <Link to="/" className="text-accent underline" onClick={() => setTab('public')}>
+              book or review
+            </Link>{' '}
+            to find people to follow.
+          </p>
+        )}
+        {reviews?.map((review) => (
+          <ReviewCard key={review.id} review={review} />
+        ))}
+        {nextCursorUrl && (
+          <button
+            type="button"
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+            className="self-center font-['Inter'] font-semibold text-sm tracking-[0.7px] text-accent border-2 border-accent rounded-xl px-6 py-3 disabled:opacity-60"
+          >
+            {isLoadingMore ? 'Loading…' : 'Load More'}
+          </button>
+        )}
       </div>
 
       <Link
