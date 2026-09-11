@@ -120,6 +120,13 @@ const mockApiRaw = {
     return delay({ detail: 'Verification code sent (mock). Use 000000 to continue.' });
   },
 
+  verifyCode: async ({ code }: { email: string; code: string }): Promise<{ detail: string }> => {
+    if (code !== '000000') {
+      fail('Invalid verification code. Use 000000 in demo mode.');
+    }
+    return delay({ detail: 'Code is valid.' });
+  },
+
   verifyCodeAndRegister: async ({
     email,
     code,

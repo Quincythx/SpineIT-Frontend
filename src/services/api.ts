@@ -112,6 +112,11 @@ const realApi = {
     return res.data;
   },
 
+  verifyCode: async (payload: { email: string; code: string }) => {
+    const res = await apiClient.post<{ detail: string }>('/auth/verify-code/', payload);
+    return res.data;
+  },
+
   verifyCodeAndRegister: async (payload: VerifyCodeAndRegisterPayload) => {
     const res = await apiClient.post<RegisterResult>('/auth/verify-code-register/', payload);
     return res.data;

@@ -22,9 +22,15 @@ export function Navbar() {
         </NavLink>
         <NavLink
           to="/signup"
+          className="font-['Inter'] font-semibold text-sm tracking-[0.7px] text-ink-muted hidden sm:inline"
+        >
+          Sign Up
+        </NavLink>
+        <NavLink
+          to="/login"
           className="bg-accent text-white font-['Inter'] font-semibold text-sm tracking-[0.7px] rounded-xl px-4 sm:px-6 py-2.5 sm:py-3"
         >
-          Join Now
+          Log In
         </NavLink>
       </div>
     </header>

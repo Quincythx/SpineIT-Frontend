@@ -8,6 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (credentials: { username: string; password: string }) => Promise<void>;
   sendVerificationCode: (email: string) => Promise<void>;
+  verifyCode: (email: string, code: string) => Promise<void>;
   verifyCodeAndRegister: (payload: VerifyCodeAndRegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -77,6 +78,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const verifyCode = async (email: string, code: string) => {
+    setIsLoading(true);
+    try {
+      await api.verifyCode({ email, code });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const verifyCodeAndRegister = async (payload: VerifyCodeAndRegisterPayload) => {
     setIsLoading(true);
     try {
@@ -120,6 +130,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isAuthenticated: !!user,
         login,
         sendVerificationCode,
+        verifyCode,
         verifyCodeAndRegister,
         logout,
         refreshProfile,
