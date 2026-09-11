@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User as UserIcon, Sparkles } from 'lucide-react';
+import { User as UserIcon, Sparkles, Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import type { Review } from '../types/api';
@@ -10,9 +10,15 @@ import { ProfileReviewCard } from '../components/ProfileReviewCard';
 export function ProfilePage() {
   const { user, refreshProfile, logout } = useAuth();
   const navigate = useNavigate();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [reviews, setReviews] = useState<Review[] | null>(null);
-  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [usernameDraft, setUsernameDraft] = useState(user?.username ?? '');
   const [bioDraft, setBioDraft] = useState(user?.bio ?? '');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -107,10 +113,44 @@ export function ProfilePage() {
 
   const reviewedBookCount = reviews ? new Set(reviews.map((r) => r.book.id)).size : null;
 
-  const handleSaveBio = async () => {
-    await api.updateProfile({ bio: bioDraft });
-    await refreshProfile();
-    setIsEditingBio(false);
+  const handleAvatarChange = (file: File | null) => {
+    setAvatarFile(file);
+    setAvatarPreview(file ? URL.createObjectURL(file) : null);
+  };
+
+  const handleSaveProfile = async () => {
+    setEditError(null);
+    setIsSavingProfile(true);
+    try {
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append('username', usernameDraft.trim());
+        formData.append('bio', bioDraft);
+        formData.append('avatar', avatarFile);
+        await api.updateProfile(formData);
+      } else {
+        await api.updateProfile({ username: usernameDraft.trim(), bio: bioDraft });
+      }
+      await refreshProfile();
+      setIsEditingProfile(false);
+      setAvatarFile(null);
+      setAvatarPreview(null);
+    } catch (err) {
+      const message =
+        (err as { response?: { data?: { username?: string[] } } })?.response?.data?.username?.[0];
+      setEditError(message || 'Could not save your profile. Please try again.');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setUsernameDraft(user.username);
+    setBioDraft(user.bio ?? '');
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setEditError(null);
+    setIsEditingProfile(false);
   };
 
   const handleShare = async () => {
@@ -127,46 +167,79 @@ export function ProfilePage() {
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-16 py-8 lg:py-12">
       <div className="flex flex-col items-center pb-8 lg:pb-12">
-        <Avatar name={user.username} src={user.avatar} size={120} />
-        <h1 className="font-['Inter'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-ink pt-2 text-center">
-          {user.username}
-        </h1>
+        <div className="relative">
+          <Avatar name={user.username} src={avatarPreview ?? user.avatar} size={120} />
+          {isEditingProfile && (
+            <button
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              aria-label="Change profile picture"
+              className="absolute inset-0 rounded-xl bg-ink/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+            >
+              <Camera className="w-6 h-6 text-white" />
+            </button>
+          )}
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleAvatarChange(e.target.files?.[0] ?? null)}
+          />
+        </div>
 
-        {isEditingBio ? (
-          <div className="flex flex-col items-center gap-2 pt-2 w-full max-w-[672px]">
+        {isEditingProfile ? (
+          <div className="flex flex-col items-center gap-3 pt-3 w-full max-w-[672px]">
+            {editError && (
+              <p className="w-full text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+                {editError}
+              </p>
+            )}
+            <input
+              type="text"
+              value={usernameDraft}
+              onChange={(e) => setUsernameDraft(e.target.value)}
+              placeholder="Username"
+              className="w-full text-center border-b border-border-strong pb-2 font-['Inter'] font-bold text-2xl text-ink outline-none focus:border-accent"
+            />
             <textarea
               value={bioDraft}
               onChange={(e) => setBioDraft(e.target.value)}
+              placeholder="Tell readers about yourself..."
               rows={3}
               className="w-full border border-border rounded p-3 font-['Inter'] text-base text-ink-muted outline-none focus:border-accent"
             />
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={handleSaveBio}
-                className="bg-accent text-white text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-2"
+                onClick={handleSaveProfile}
+                disabled={isSavingProfile || !usernameDraft.trim()}
+                className="bg-accent text-white text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-2 disabled:opacity-60"
               >
-                Save
+                {isSavingProfile ? 'Saving…' : 'Save'}
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setBioDraft(user.bio ?? '');
-                  setIsEditingBio(false);
-                }}
-                className="border border-accent text-accent text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-2"
+                onClick={handleCancelEdit}
+                disabled={isSavingProfile}
+                className="border border-accent text-accent text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-2 disabled:opacity-60"
               >
                 Cancel
               </button>
             </div>
           </div>
         ) : (
-          <p className="font-['Inter'] text-lg text-ink-muted text-center max-w-[672px] pt-2">
-            {user.bio || 'No bio yet.'}
-          </p>
+          <>
+            <h1 className="font-['Inter'] font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight lg:leading-[56px] text-ink pt-2 text-center">
+              {user.username}
+            </h1>
+            <p className="font-['Inter'] text-lg text-ink-muted text-center max-w-[672px] pt-2">
+              {user.bio || 'No bio yet.'}
+            </p>
+          </>
         )}
 
-        {!isEditingBio && (
+        {!isEditingProfile && (
           <div className="flex gap-6 pt-3">
             <span className="font-['Inter'] text-sm text-ink-muted">
               <strong className="text-ink">{followerCount}</strong> Followers
@@ -177,11 +250,11 @@ export function ProfilePage() {
           </div>
         )}
 
-        {!isEditingBio && (
+        {!isEditingProfile && (
           <div className="flex gap-4 pt-2">
             <button
               type="button"
-              onClick={() => setIsEditingBio(true)}
+              onClick={() => setIsEditingProfile(true)}
               className="bg-accent text-white text-sm font-semibold tracking-[0.7px] rounded-xl px-6 py-3"
             >
               Edit Profile

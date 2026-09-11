@@ -147,12 +147,25 @@ const mockApiRaw = {
 
   updateProfile: async (data: FormData | Partial<User>): Promise<User> => {
     const user = requireCurrentUser();
-    if (data instanceof FormData) {
-      const bio = data.get('bio');
-      if (typeof bio === 'string') user.bio = bio;
-    } else {
-      Object.assign(user, data);
+
+    const nextUsername = data instanceof FormData ? data.get('username') : data.username;
+    if (typeof nextUsername === 'string' && nextUsername && nextUsername !== user.username) {
+      if (mockUsers.some((u) => u.id !== user.id && u.username === nextUsername)) {
+        fail('A user with that username already exists.');
+      }
+      user.username = nextUsername;
     }
+
+    const nextBio = data instanceof FormData ? data.get('bio') : data.bio;
+    if (typeof nextBio === 'string') user.bio = nextBio;
+
+    if (data instanceof FormData) {
+      const avatarFile = data.get('avatar');
+      if (avatarFile instanceof File) user.avatar = URL.createObjectURL(avatarFile);
+    } else if (data.avatar !== undefined) {
+      user.avatar = data.avatar;
+    }
+
     return delay(user);
   },
 
